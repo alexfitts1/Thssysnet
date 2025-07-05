@@ -252,16 +252,13 @@ function showTimerDone() {
 
 // In dismissTimerDone():
 function dismissTimerDone() {
-  alarm.pause();
-alarm.currentTime = 0;
-  document.getElementById('timerDonePopup').style.display = 'none';
   const alarm = document.getElementById('alarmSound');
-  alarm.pause();
-  alarm.currentTime = 0;
-  navigator.vibrate(0);
+  alarm.pause();          // stop the sound
+  alarm.currentTime = 0;  // reset to start, so no looping or stuck play
+  navigator.vibrate(0);   // stop vibration if any
+  document.getElementById('timerDonePopup').style.display = 'none';
   document.title = 'Thssysnet Clock';
 }
-
     let darkMode = JSON.parse(localStorage.getItem('darkMode'));
 
     function isAutoDarkTime() {
