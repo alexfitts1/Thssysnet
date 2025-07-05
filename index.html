@@ -219,9 +219,49 @@
   </div>
 
   <!-- Audio -->
-  <audio id="alarmSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+  <audio id="alarmSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto" loop></audio>
 
   <script>
+    // Add at the top of script:
+let audioPrimed = false;
+
+// Prime audio context with any user gesture
+document.body.addEventListener('click', () => {
+  if (!audioPrimed) {
+    const sound = document.getElementById('alarmSound');
+    sound.play().catch(() => {}); // Catch silently in case it's blocked
+    sound.pause();
+    sound.currentTime = 0;
+    audioPrimed = true;
+  }
+}, { once: true });
+
+// In showTimerDone():
+function showTimerDone() {
+  document.title = 'Thssysnet Timer Done';
+  document.getElementById('timerDonePopup').style.display = 'block';
+
+  const alarm = document.getElementById('alarmSound');
+  alarm.currentTime = 0;
+  alarm.play();
+
+  if ("vibrate" in navigator) {
+    navigator.vibrate([300, 100, 300, 100, 300]);
+  }
+}
+
+// In dismissTimerDone():
+function dismissTimerDone() {
+  alarm.pause();
+alarm.currentTime = 0;
+  document.getElementById('timerDonePopup').style.display = 'none';
+  const alarm = document.getElementById('alarmSound');
+  alarm.pause();
+  alarm.currentTime = 0;
+  navigator.vibrate(0);
+  document.title = 'Thssysnet Clock';
+}
+
     let darkMode = JSON.parse(localStorage.getItem('darkMode'));
 
     function isAutoDarkTime() {
