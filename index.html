@@ -219,174 +219,188 @@
   </div>
 
   <!-- Audio -->
-  <audio id="alarmSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto" loop></audio>
+  <audio id="alarmSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
 
   <script>
-    // Add at the top of script:
-let audioPrimed = false;
+    <script>
+  // Prime audio context with any user gesture (play/pause to unlock)
+  let audioPrimed = false;
+  document.body.addEventListener('click', () => {
+    if (!audioPrimed) {
+      const sound = document.getElementById('alarmSound');
+      sound.play().catch(() => {});
+      sound.pause();
+      sound.currentTime = 0;
+      audioPrimed = true;
+    }
+  }, { once: true });
 
-// Prime audio context with any user gesture
-document.body.addEventListener('click', () => {
-  if (!audioPrimed) {
-    const sound = document.getElementById('alarmSound');
-    sound.play().catch(() => {}); // Catch silently in case it's blocked
-    sound.pause();
-    sound.currentTime = 0;
-    audioPrimed = true;
+  // Dark mode from localStorage or auto based on time
+  let darkMode = JSON.parse(localStorage.getItem('darkMode'));
+
+  function isAutoDarkTime() {
+    const hour = new Date().getHours();
+    return (hour >= 21 || hour < 6);
   }
-}, { once: true });
 
-// In showTimerDone():
-function showTimerDone() {
-  document.title = 'Thssysnet Timer Done';
-  document.getElementById('timerDonePopup').style.display = 'block';
-
-  const alarm = document.getElementById('alarmSound');
-  alarm.currentTime = 0;
-  alarm.play();
-
-  if ("vibrate" in navigator) {
-    navigator.vibrate([300, 100, 300, 100, 300]);
+  function applyInitialDarkMode() {
+    const shouldBeDark = (darkMode !== null) ? darkMode : isAutoDarkTime();
+    document.body.classList.toggle('dark', shouldBeDark);
   }
-}
 
-// In dismissTimerDone():
-function dismissTimerDone() {
-  const alarm = document.getElementById('alarmSound');
-  alarm.pause();          // stop the sound
-  alarm.currentTime = 0;  // reset to start, so no looping or stuck play
-  navigator.vibrate(0);   // stop vibration if any
-  document.getElementById('timerDonePopup').style.display = 'none';
-  document.title = 'Thssysnet Clock';
-}
-    let darkMode = JSON.parse(localStorage.getItem('darkMode'));
+  function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+    darkMode = document.body.classList.contains('dark');
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+  }
 
-    function isAutoDarkTime() {
-      const hour = new Date().getHours();
-      return (hour >= 21 || hour < 6);
-    }
+  // Clock & Date update
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.toLocaleTimeString();
+    document.getElementById('date').textContent = now.toLocaleDateString(undefined, {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+  }
 
-    function applyInitialDarkMode() {
-      const shouldBeDark = (darkMode !== null) ? darkMode : isAutoDarkTime();
-      document.body.classList.toggle('dark', shouldBeDark);
-    }
+  // Show/hide panels with slide animation
+  function togglePanel(id) {
+    document.querySelectorAll('.slide-panel').forEach(p => {
+      if (p.id !== id) p.classList.remove('show');
+    });
+    const panel = document.getElementById(id);
+    panel.classList.toggle('show');
+  }
 
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark');
-      darkMode = document.body.classList.contains('dark');
-      localStorage.setItem('darkMode', JSON.stringify(darkMode));
-    }
+  // --- Stopwatch ---
+  let swInterval, swStart = 0, swElapsed = 0;
+  function updateStopwatch() {
+    const now = Date.now();
+    const time = now - swStart + swElapsed;
+    const ms = Math.floor((time % 1000) / 100);
+    const s = Math.floor((time / 1000) % 60);
+    const m = Math.floor(time / 60000);
+    document.getElementById('swDisplay').textContent =
+      `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ms}`;
+    document.title = `${m}:${s.toString().padStart(2, '0')} Thssysnet Stopwatch`;
+  }
 
-    function updateClock() {
-      const now = new Date();
-      document.getElementById('clock').textContent = now.toLocaleTimeString();
-      document.getElementById('date').textContent = now.toLocaleDateString(undefined, {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-      });
-    }
+  function startStopwatch() {
+    if (swInterval) return;
+    swStart = Date.now();
+    swInterval = setInterval(updateStopwatch, 100);
+  }
 
-    function togglePanel(id) {
-      document.querySelectorAll('.slide-panel').forEach(p => {
-        if (p.id !== id) p.classList.remove('show');
-      });
-      const panel = document.getElementById(id);
-      panel.classList.toggle('show');
-    }
+  function stopStopwatch() {
+    if (!swInterval) return;
+    clearInterval(swInterval);
+    swElapsed += Date.now() - swStart;
+    swInterval = null;
+  }
 
-    // Stopwatch
-    let swInterval, swStart = 0, swElapsed = 0;
-    function updateStopwatch() {
-      const now = Date.now();
-      const time = now - swStart + swElapsed;
-      const ms = Math.floor((time % 1000) / 100);
-      const s = Math.floor((time / 1000) % 60);
-      const m = Math.floor(time / 60000);
-      document.getElementById('swDisplay').textContent =
-        `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ms}`;
-      document.title = `${m}:${s.toString().padStart(2, '0')} Thssysnet Stopwatch`;
-    }
+  function resetStopwatch() {
+    stopStopwatch();
+    swElapsed = 0;
+    document.getElementById('swDisplay').textContent = '00:00.0';
+    document.title = 'Thssysnet Clock';
+  }
 
-    function startStopwatch() {
-      if (swInterval) return;
-      swStart = Date.now();
-      swInterval = setInterval(updateStopwatch, 100);
-    }
+  // --- Timer ---
+  let timerInterval, timerRemaining = 0;
 
-    function stopStopwatch() {
-      if (!swInterval) return;
-      clearInterval(swInterval);
-      swElapsed += Date.now() - swStart;
-      swInterval = null;
-    }
-
-    function resetStopwatch() {
-      stopStopwatch();
-      swElapsed = 0;
-      document.getElementById('swDisplay').textContent = '00:00.0';
-      document.title = 'Thssysnet Clock';
-    }
-
-    // Timer
-    let timerInterval, timerRemaining = 0;
-    function updateTimer() {
-      if (timerRemaining <= 0) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-        document.getElementById('timerDisplay').textContent = '00:00';
-        showTimerDone();
-        return;
-      }
-      timerRemaining -= 1000;
-      const m = Math.floor(timerRemaining / 60000);
-      const s = Math.floor((timerRemaining % 60000) / 1000);
-      document.getElementById('timerDisplay').textContent =
-        `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-      document.title = `${m}:${s.toString().padStart(2, '0')} Thssysnet Timer`;
-    }
-
-    function startTimer() {
-      const min = parseInt(document.getElementById('minInput').value) || 0;
-      const sec = parseInt(document.getElementById('secInput').value) || 0;
-      timerRemaining = (min * 60 + sec) * 1000;
-      updateTimer();
-      clearInterval(timerInterval);
-      timerInterval = setInterval(updateTimer, 1000);
-    }
-
-    function stopTimer() {
+  function updateTimer() {
+    if (timerRemaining <= 0) {
       clearInterval(timerInterval);
       timerInterval = null;
-      document.title = 'Thssysnet Clock';
-    }
-
-    function resetTimer() {
-      stopTimer();
-      timerRemaining = 0;
       document.getElementById('timerDisplay').textContent = '00:00';
+      showTimerDone();
+      return;
     }
+    timerRemaining -= 1000;
+    const m = Math.floor(timerRemaining / 60000);
+    const s = Math.floor((timerRemaining % 60000) / 1000);
+    document.getElementById('timerDisplay').textContent =
+      `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    document.title = `${m}:${s.toString().padStart(2, '0')} Thssysnet Timer`;
+  }
 
-    function showTimerDone() {
-      document.title = 'Thssysnet Timer Done';
-      document.getElementById('timerDonePopup').style.display = 'block';
-      document.getElementById('alarmSound').play();
-      if ("vibrate" in navigator) {
-        navigator.vibrate([300, 100, 300]);
+  function startTimer() {
+    const min = parseInt(document.getElementById('minInput').value) || 0;
+    const sec = parseInt(document.getElementById('secInput').value) || 0;
+    timerRemaining = (min * 60 + sec) * 1000;
+    if (timerRemaining <= 0) return; // ignore invalid times
+    updateTimer();
+    clearInterval(timerInterval);
+    timerInterval = setInterval(updateTimer, 1000);
+  }
+
+  function stopTimer() {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    document.title = 'Thssysnet Clock';
+  }
+
+  function resetTimer() {
+    stopTimer();
+    timerRemaining = 0;
+    document.getElementById('timerDisplay').textContent = '00:00';
+  }
+
+  // --- Timer Done Alarm Logic ---
+  let beepCount = 0;
+  let beepIntervalId = null;
+
+  function playBeep() {
+    const alarm = document.getElementById('alarmSound');
+    alarm.currentTime = 0;
+    alarm.play();
+    if ("vibrate" in navigator) {
+      navigator.vibrate(300);
+    }
+  }
+
+  function showTimerDone() {
+    document.title = 'Thssysnet Timer Done';
+    document.getElementById('timerDonePopup').style.display = 'block';
+
+    beepCount = 0;
+    playBeep();
+
+    // Play beep 5 times total with 1 second interval
+    beepIntervalId = setInterval(() => {
+      beepCount++;
+      if (beepCount >= 5) {
+        clearInterval(beepIntervalId);
+        beepIntervalId = null;
+        navigator.vibrate(0);
+      } else {
+        playBeep();
       }
-    }
+    }, 1000);
+  }
 
-    function dismissTimerDone() {
-      document.getElementById('timerDonePopup').style.display = 'none';
-      document.title = 'Thssysnet Clock';
+  function dismissTimerDone() {
+    if (beepIntervalId !== null) {
+      clearInterval(beepIntervalId);
+      beepIntervalId = null;
     }
+    const alarm = document.getElementById('alarmSound');
+    alarm.pause();
+    alarm.currentTime = 0;
+    navigator.vibrate(0);
+    document.getElementById('timerDonePopup').style.display = 'none';
+    document.title = 'Thssysnet Clock';
+  }
 
-    applyInitialDarkMode();
-    updateClock();
-    setInterval(updateClock, 1000);
-    setInterval(() => {
-      if (darkMode === null) {
-        document.body.classList.toggle('dark', isAutoDarkTime());
-      }
-    }, 3600000);
+  // Initial setup
+  applyInitialDarkMode();
+  updateClock();
+  setInterval(updateClock, 1000);
+  setInterval(() => {
+    if (darkMode === null) {
+      document.body.classList.toggle('dark', isAutoDarkTime());
+    }
+  }, 3600000);
   </script>
 </body>
 </html>
