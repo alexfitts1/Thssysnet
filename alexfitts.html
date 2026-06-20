@@ -1,82 +1,362 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <title>Alex Fitts</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Fonts: change either variable below to swap typefaces site-wide -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
-<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Roboto'>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
 <style>
-html,body,h1,h2,h3,h4,h5,h6 {font-family: "Roboto", sans-serif}
+  /* ===== Easy-to-edit theme tokens ===== */
+  :root{
+    --font-heading: 'Space Grotesk', sans-serif; /* swap for any Google Font */
+    --font-body: 'Inter', sans-serif;            /* swap for any Google Font */
+
+    --red: #C8102E;
+    --red-dark: #8C0A20;
+    --ink: #1E1E22;
+    --paper: #FAF8F7;
+    --grey: #6B6B70;
+  }
+
+  html, body{
+    font-family: var(--font-body);
+    background: var(--paper);
+    color: var(--ink);
+    margin: 0;
+    min-height: 100%;
+  }
+  h1,h2,h3,h4,h5,h6{
+    font-family: var(--font-heading);
+    letter-spacing: 0.2px;
+  }
+
+  /* sticky-footer layout so the page always fills the viewport */
+  .page-shell{
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .page-main{ flex: 1 0 auto; }
+
+  /* ===== Top nav ===== */
+  .topnav{
+    background: var(--ink);
+    color: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 2px 10px rgba(0,0,0,.25);
+  }
+  .topnav-inner{
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+  }
+  .brand{
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #fff;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+  }
+  .brand span{ color: var(--red); }
+
+  .hamburger-btn{
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.6rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 6px 10px;
+    border-radius: 6px;
+  }
+  .hamburger-btn:hover, .hamburger-btn:focus-visible{
+    background: rgba(255,255,255,.12);
+    outline: none;
+  }
+
+  /* ===== Slide-in page-switcher sidebar ===== */
+  .sidenav{
+    height: 100%;
+    width: 280px;
+    position: fixed;
+    z-index: 100;
+    top: 0;
+    right: -280px;
+    background: var(--ink);
+    overflow-x: hidden;
+    transition: right .28s ease;
+    padding-top: 70px;
+    box-shadow: -4px 0 20px rgba(0,0,0,.3);
+  }
+  .sidenav.open{ right: 0; }
+  .sidenav a{
+    padding: 16px 28px;
+    text-decoration: none;
+    font-size: 1.05rem;
+    color: #f1f1f1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-left: 3px solid transparent;
+    transition: background .15s, border-color .15s;
+  }
+  .sidenav a:hover{
+    background: rgba(255,255,255,.06);
+    border-left-color: var(--red);
+    color: #fff;
+  }
+  .sidenav .close-btn{
+    position: absolute;
+    top: 14px;
+    right: 20px;
+    font-size: 1.6rem;
+    color: #fff;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  .overlay{
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 90;
+  }
+  .overlay.show{ display: block; }
+
+  /* ===== Cards / sections ===== */
+  .red-card{
+    border: 1px solid #eee;
+    border-left: 5px solid var(--red);
+    box-shadow: 0 6px 18px rgba(200,16,46,.10);
+    transition: box-shadow .2s, transform .2s;
+  }
+  .red-card:hover{
+    box-shadow: 0 10px 26px rgba(200,16,46,.18);
+    transform: translateY(-2px);
+  }
+  .eyebrow{
+    font-family: var(--font-heading);
+    font-size: .78rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--red);
+    font-weight: 700;
+  }
+  .section-title{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .profile-photo-wrap{
+    position: relative;
+    overflow: hidden;
+  }
+  .profile-photo-wrap img{
+    display: block;
+    width: 100%;
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    background: #ddd;
+  }
+  .profile-name-bar{
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.75) 100%);
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: 18px 16px 14px;
+  }
+  .profile-name-bar h2{
+    color: #fff;
+    margin: 0;
+    font-size: 1.5rem;
+  }
+
+  .contact-row{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    color: var(--grey);
+    text-decoration: none;
+  }
+  .contact-row i{ color: var(--red); width: 18px; text-align: center; }
+  a.contact-row:hover{ color: var(--ink); }
+
+  /* ===== Footer / socials ===== */
+  .site-footer{
+    background: var(--red);
+    color: #fff;
+    text-align: center;
+    padding: 26px 16px;
+    margin-top: 30px;
+  }
+  .social-row{
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin: 14px 0 6px;
+  }
+  .social-row a{
+    color: #fff;
+    font-size: 1.4rem;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,255,255,.5);
+    border-radius: 50%;
+    transition: background .15s, color .15s, transform .15s;
+  }
+  .social-row a:hover{
+    background: #fff;
+    color: var(--red);
+    transform: translateY(-3px);
+  }
+
+  /* ===== Responsive tuning ===== */
+  .content-wrap{
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px 10px;
+  }
+
+  @media (max-width: 650px){
+    .content-wrap{ padding: 16px 14px 6px; }
+    .profile-photo-wrap img{ aspect-ratio: 4/3; }
+  }
+
+  /* short landscape phones: tighten vertical spacing */
+  @media (max-width: 900px) and (orientation: landscape){
+    .topnav-inner{ padding: 8px 16px; }
+    .sidenav{ padding-top: 56px; }
+    .profile-photo-wrap img{ aspect-ratio: 16/9; }
+  }
+
+  @media (min-width: 651px) and (max-width: 1024px){
+    .content-wrap{ padding: 28px 28px 10px; }
+  }
 </style>
 </head>
-<body class="w3-light-grey">
+<body>
 
-<!-- Page Container -->
-<div class="w3-content w3-margin-top" style="max-width:1400px;">
+<div class="page-shell">
 
-  <!-- The Grid -->
-  <div class="w3-row-padding">
+  <!-- ===== Top Nav ===== -->
+  <nav class="topnav">
+    <div class="topnav-inner">
+      <a href="#home" class="brand">Alex <span>Fitts</span></a>
+      <button class="hamburger-btn" aria-label="Open menu" onclick="openNav()">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+  </nav>
 
-    <!-- Left Column -->
-    <div class="w3-third">
+  <!-- ===== Slide-in page switcher ===== -->
+  <div id="sideNav" class="sidenav">
+    <button class="close-btn" aria-label="Close menu" onclick="closeNav()">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    <a href="#home" onclick="closeNav()"><i class="fa-solid fa-house"></i> Home</a>
+    <a href="#education" onclick="closeNav()"><i class="fa-solid fa-graduation-cap"></i> Education</a>
+    <a href="#contact" onclick="closeNav()"><i class="fa-solid fa-address-card"></i> Contact</a>
+  </div>
+  <div id="overlay" class="overlay" onclick="closeNav()"></div>
 
-      <div class="w3-white w3-text-grey w3-card-4">
-        <div class="w3-display-container">
-          <img src="/alexfittsheadshot.jpg" style="width:100%" alt="Alex Fitts headshot">
-          <div class="w3-display-bottomleft w3-container w3-text-black">
-            <h2>Alex Fitts</h2>
+  <main class="page-main">
+    <div class="content-wrap">
+
+      <a id="home"></a>
+      <div class="w3-row-padding">
+
+        <!-- Left Column -->
+        <div class="w3-third w3-margin-bottom">
+          <div class="w3-white red-card">
+            <div class="profile-photo-wrap">
+              <img src="/alexfittsheadshot.jpg" alt="Alex Fitts headshot">
+              <div class="profile-name-bar">
+                <h2>Alex Fitts</h2>
+              </div>
+            </div>
+            <div class="w3-container w3-padding">
+              <p class="contact-row"><i class="fa-solid fa-briefcase"></i>Student &amp; Freelancer</p>
+              <p class="contact-row"><i class="fa-solid fa-house"></i>Hoboken, NJ</p>
+              <a class="contact-row" href="mailto:alex@thssysnet.pw"><i class="fa-solid fa-envelope"></i>alex@thssysnet.pw</a>
+            </div>
           </div>
         </div>
-        <div class="w3-container">
-          <p><i class="fa fa-briefcase fa-fw w3-margin-right w3-large w3-text-red"></i>Student &amp; Freelancer</p>
-          <p><i class="fa fa-home fa-fw w3-margin-right w3-large w3-text-red"></i>Hoboken, NJ</p>
-          <p><i class="fa fa-envelope fa-fw w3-margin-right w3-large w3-text-red"></i>alex@thssysnet.pw</p>
-          <hr>
-          <br>
-        </div>
-      </div><br>
 
-    <!-- End Left Column -->
-    </div>
+        <!-- Right Column -->
+        <div class="w3-twothird">
+          <a id="education"></a>
+          <div class="w3-container w3-white red-card w3-padding-16">
+            <div class="section-title w3-padding-16">
+              <i class="fa-solid fa-certificate w3-xxlarge" style="color:var(--red)"></i>
+              <h2 style="margin:0;">Education</h2>
+            </div>
 
-    <!-- Right Column -->
-    <div class="w3-twothird">
+            <div class="w3-container w3-padding-small">
+              <span class="eyebrow">In Progress</span>
+              <h5 style="margin:6px 0 2px;"><b>Quinnipiac University</b></h5>
+              <h6 style="color:var(--red); margin:0 0 8px;"><i class="fa-solid fa-calendar-days w3-margin-right"></i>August 2026 - June 2030 <span class="w3-tag w3-red w3-round">Planned</span></h6>
+              <p>Majoring in Political Science</p>
+              <hr>
+            </div>
 
-      <div class="w3-container w3-card w3-white">
-        <h2 class="w3-text-grey w3-padding-16"><i class="fa fa-certificate fa-fw w3-margin-right w3-xxlarge w3-text-red"></i>Education</h2>
-        <div class="w3-container">
-          <h5 class="w3-opacity"><b>Quinnipiac University</b></h5>
-          <h6 class="w3-text-red"><i class="fa fa-calendar fa-fw w3-margin-right"></i>August 2026 - June 2030 <span class="w3-tag w3-red w3-round">Planned</span></h6>
-          <p>Majoring in Political Science</p>
-          <hr>
+            <div class="w3-container w3-padding-small">
+              <span class="eyebrow">Completed</span>
+              <h5 style="margin:6px 0 2px;"><b>The Hudson School</b></h5>
+              <h6 style="color:var(--red); margin:0 0 8px;"><i class="fa-solid fa-calendar-days w3-margin-right"></i>September 2018 - June 2026</h6>
+              <p>Graduated with a high school diploma</p>
+            </div>
+          </div>
         </div>
-        <div class="w3-container">
-          <h5 class="w3-opacity"><b>The Hudson School</b></h5>
-          <h6 class="w3-text-red"><i class="fa fa-calendar fa-fw w3-margin-right"></i>September 2018 - June 2026</h6>
-          <p>Graduated with a high school diploma</p><br>
-        </div>
+
       </div>
 
-    <!-- End Right Column -->
+      <a id="contact"></a>
     </div>
+  </main>
 
-  <!-- End Grid -->
-  </div>
+  <!-- ===== Footer ===== -->
+  <footer class="site-footer">
+    <p style="margin:0;">Find me on social media.</p>
+    <div class="social-row">
+      <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+      <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+      <a href="#" aria-label="Snapchat"><i class="fa-brands fa-snapchat"></i></a>
+      <a href="#" aria-label="X (formerly Twitter)"><i class="fa-brands fa-x-twitter"></i></a>
+      <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+    </div>
+  </footer>
 
-  <!-- End Page Container -->
 </div>
 
-<footer class="w3-container w3-red w3-center w3-margin-top">
-  <p>Find me on social media.</p>
-  <i class="fa fa-facebook-official w3-hover-opacity"></i>
-  <i class="fa fa-instagram w3-hover-opacity"></i>
-  <i class="fa fa-snapchat w3-hover-opacity"></i>
-  <!--<i class="fa fa-twitter w3-hover-opacity"></i>-->
-  <!--<i class="fa fa-linkedin w3-hover-opacity"></i>-->
-  <!--<p>Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank">w3.css</a></p>-->
-</footer>
+<script>
+  function openNav(){
+    document.getElementById('sideNav').classList.add('open');
+    document.getElementById('overlay').classList.add('show');
+  }
+  function closeNav(){
+    document.getElementById('sideNav').classList.remove('open');
+    document.getElementById('overlay').classList.remove('show');
+  }
+</script>
 
 </body>
 </html>
