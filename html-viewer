@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thssysnet HTML Viewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0E1014;
+    --panel: #15181D;
+    --panel-2: #1B1F26;
+    --line: #262B33;
+    --text: #E9E7E2;
+    --muted: #8A8F98;
+    --accent: #FF6A3D;
+    --accent-dim: #B6481F;
+    --live: #36D6C4;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+  *{ box-sizing: border-box; }
+  html, body{
+    margin: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    overflow: hidden;
+  }
+  .shell{
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  /* ===== Header ===== */
+  .topbar{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 18px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+  .brand{
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .brand .dot{
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+    box-shadow: 0 0 0 3px rgba(255,106,61,.18);
+  }
+  .brand h1{
+    font-family: var(--mono);
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: .3px;
+    margin: 0;
+    color: var(--text);
+  }
+  .brand small{
+    font-family: var(--sans);
+    color: var(--muted);
+    font-size: .72rem;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    margin-left: 6px;
+  }
+  .toolbar{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .btn{
+    font-family: var(--sans);
+    font-size: .8rem;
+    font-weight: 500;
+    color: var(--text);
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 7px 12px;
+    cursor: pointer;
+    transition: border-color .15s, color .15s, background .15s;
+    white-space: nowrap;
+  }
+  .btn:hover{
+    border-color: var(--accent-dim);
+    color: #fff;
+  }
+  .btn:focus-visible{
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+  .btn.active{
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ===== Main split ===== */
+  .workspace{
+    flex: 1 1 auto;
+    display: flex;
+    min-height: 0;
+  }
+  .workspace.vertical{ flex-direction: column; }
+
+  .pane{
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    background: var(--bg);
+  }
+  .pane-head{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    flex: 0 0 auto;
+  }
+  .pane-head .pill{
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 4px 12px 4px 10px;
+    font-family: var(--mono);
+    font-size: .7rem;
+    color: var(--muted);
+    text-transform: none;
+    letter-spacing: .2px;
+  }
+  .pulse{
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--live);
+    box-shadow: 0 0 0 0 rgba(54,214,196,.6);
+    animation: pulse 1.8s infinite;
+    flex: 0 0 auto;
+  }
+  @keyframes pulse{
+    0%   { box-shadow: 0 0 0 0 rgba(54,214,196,.55); }
+    70%  { box-shadow: 0 0 0 6px rgba(54,214,196,0); }
+    100% { box-shadow: 0 0 0 0 rgba(54,214,196,0); }
+  }
+
+  /* ----- Editor pane ----- */
+  #editor-pane{ flex: 1 1 50%; }
+  .editor-body{
+    flex: 1 1 auto;
+    display: flex;
+    min-height: 0;
+    background: var(--panel);
+  }
+  .gutter{
+    flex: 0 0 auto;
+    padding: 14px 10px 14px 16px;
+    font-family: var(--mono);
+    font-size: .85rem;
+    line-height: 1.55;
+    color: #4A505A;
+    text-align: right;
+    user-select: none;
+    overflow: hidden;
+    background: var(--panel);
+    border-right: 1px solid var(--line);
+    white-space: pre;
+  }
+  textarea#code{
+    flex: 1 1 auto;
+    resize: none;
+    border: none;
+    outline: none;
+    background: var(--panel);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: .85rem;
+    line-height: 1.55;
+    padding: 14px 16px;
+    white-space: pre;
+    overflow: auto;
+    tab-size: 2;
+  }
+  textarea#code.wrap{ white-space: pre-wrap; }
+
+  /* ----- Divider ----- */
+  .divider{
+    flex: 0 0 6px;
+    background: var(--line);
+    cursor: col-resize;
+    position: relative;
+    transition: background .15s;
+  }
+  .divider:hover, .divider.dragging{ background: var(--accent-dim); }
+  .workspace.vertical .divider{ cursor: row-resize; }
+
+  /* ----- Preview pane ----- */
+  #preview-pane{ flex: 1 1 50%; }
+  .browser-chrome{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    background: var(--panel-2);
+    border-bottom: 1px solid var(--line);
+    flex: 0 0 auto;
+  }
+  .traffic{ display: flex; gap: 6px; }
+  .traffic span{
+    width: 9px; height: 9px; border-radius: 50%;
+    background: #3A3F47;
+  }
+  .addr{
+    flex: 1 1 auto;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-family: var(--mono);
+    font-size: .75rem;
+    color: var(--muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .addr b{ color: var(--accent); font-weight: 600; }
+  iframe#preview{
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #fff;
+  }
+
+  /* ===== Status bar ===== */
+  .statusbar{
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 7px 16px;
+    background: var(--accent);
+    color: #1A0A04;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .3px;
+    flex-wrap: wrap;
+  }
+  .statusbar .stats{ display: flex; gap: 18px; flex-wrap: wrap; }
+  .statusbar .live-tag{
+    display: flex; align-items: center; gap: 6px;
+    font-weight: 700;
+  }
+  .statusbar .live-tag .pulse{ background: #1A0A04; box-shadow: none; animation: pulse2 1.8s infinite; }
+  @keyframes pulse2{
+    0%   { opacity: 1; }
+    50%  { opacity: .35; }
+    100% { opacity: 1; }
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 820px){
+    .workspace{ flex-direction: column !important; }
+    .divider{ cursor: row-resize !important; flex: 0 0 6px; width: 100% !important; height: 6px; }
+    .toolbar{ gap: 6px; }
+    .btn{ padding: 6px 9px; font-size: .74rem; }
+    .gutter{ display: none; }
+    .statusbar{ font-size: .66rem; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="dot"></span>
+      <h1>Thssysnet<small>HTML Viewer</small></h1>
+    </div>
+    <div class="toolbar">
+      <button class="btn" id="btn-sample">Load sample</button>
+      <button class="btn" id="btn-clear">Clear</button>
+      <button class="btn" id="btn-wrap">Wrap: off</button>
+      <button class="btn" id="btn-layout">Layout: side by side</button>
+      <button class="btn" id="btn-fullscreen">Expand preview</button>
+    </div>
+  </header>
+
+  <div class="workspace" id="workspace">
+
+    <section class="pane" id="editor-pane">
+      <div class="pane-head">
+        <span>source.html</span>
+        <span id="caret-info">ln 1, col 1</span>
+      </div>
+      <div class="editor-body">
+        <div class="gutter" id="gutter">1</div>
+        <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+      </div>
+    </section>
+
+    <div class="divider" id="divider" role="separator" aria-label="Resize panes"></div>
+
+    <section class="pane" id="preview-pane">
+      <div class="browser-chrome">
+        <span class="traffic"><span></span><span></span><span></span></span>
+        <span class="addr"><b>preview://</b>thssysnet.local/render</span>
+        <span class="pill"><span class="pulse"></span>live</span>
+      </div>
+      <iframe id="preview" title="HTML preview" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe>
+    </section>
+
+  </div>
+
+  <footer class="statusbar">
+    <div class="stats">
+      <span id="stat-lines">0 lines</span>
+      <span id="stat-chars">0 chars</span>
+      <span id="stat-time">render 0ms</span>
+    </div>
+    <div class="live-tag"><span class="pulse"></span>LIVE</div>
+  </footer>
+
+</div>
+
+<script>
+  const codeEl = document.getElementById('code');
+  const gutterEl = document.getElementById('gutter');
+  const previewEl = document.getElementById('preview');
+  const workspaceEl = document.getElementById('workspace');
+  const dividerEl = document.getElementById('divider');
+  const editorPane = document.getElementById('editor-pane');
+  const previewPane = document.getElementById('preview-pane');
+
+  const statLines = document.getElementById('stat-lines');
+  const statChars = document.getElementById('stat-chars');
+  const statTime = document.getElementById('stat-time');
+  const caretInfo = document.getElementById('caret-info');
+
+  const SAMPLE = `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body{ font-family: sans-serif; background: #fdf6f0; color:#2b2b2b; text-align:center; padding-top:60px; }
+    h1{ color:#ff6a3d; }
+    button{ padding:10px 18px; border:none; border-radius:6px; background:#ff6a3d; color:#fff; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <h1>Hello from Thssysnet 👋</h1>
+  <p>Edit the code on the left — this updates instantly.</p>
+  <button onclick="alert('It works!')">Click me</button>
+</body>
+</html>`;
+
+  function updateGutter(){
+    const lines = codeEl.value.split('\n').length;
+    let out = '';
+    for(let i = 1; i <= lines; i++) out += i + '\n';
+    gutterEl.textContent = out;
+  }
+
+  function updateStats(renderMs){
+    const text = codeEl.value;
+    const lines = text.split('\n').length;
+    statLines.textContent = lines + (lines === 1 ? ' line' : ' lines');
+    statChars.textContent = text.length + ' chars';
+    if(renderMs !== undefined) statTime.textContent = 'render ' + renderMs.toFixed(1) + 'ms';
+  }
+
+  function render(){
+    const t0 = performance.now();
+    previewEl.srcdoc = codeEl.value;
+    const t1 = performance.now();
+    updateStats(t1 - t0);
+  }
+
+  function syncGutterScroll(){
+    gutterEl.scrollTop = codeEl.scrollTop;
+  }
+
+  function updateCaret(){
+    const pos = codeEl.selectionStart;
+    const before = codeEl.value.slice(0, pos);
+    const lines = before.split('\n');
+    const ln = lines.length;
+    const col = lines[lines.length - 1].length + 1;
+    caretInfo.textContent = 'ln ' + ln + ', col ' + col;
+  }
+
+  codeEl.addEventListener('input', () => {
+    updateGutter();
+    render();
+  });
+  codeEl.addEventListener('scroll', syncGutterScroll);
+  codeEl.addEventListener('keyup', updateCaret);
+  codeEl.addEventListener('click', updateCaret);
+
+  // tab key inserts spaces instead of moving focus
+  codeEl.addEventListener('keydown', (e) => {
+    if(e.key === 'Tab'){
+      e.preventDefault();
+      const start = codeEl.selectionStart, end = codeEl.selectionEnd;
+      codeEl.value = codeEl.value.slice(0, start) + '  ' + codeEl.value.slice(end);
+      codeEl.selectionStart = codeEl.selectionEnd = start + 2;
+      updateGutter();
+      render();
+    }
+  });
+
+  document.getElementById('btn-sample').addEventListener('click', () => {
+    codeEl.value = SAMPLE;
+    updateGutter();
+    render();
+    updateCaret();
+  });
+
+  document.getElementById('btn-clear').addEventListener('click', () => {
+    codeEl.value = '';
+    updateGutter();
+    render();
+    updateCaret();
+    codeEl.focus();
+  });
+
+  const wrapBtn = document.getElementById('btn-wrap');
+  wrapBtn.addEventListener('click', () => {
+    const on = codeEl.classList.toggle('wrap');
+    wrapBtn.textContent = 'Wrap: ' + (on ? 'on' : 'off');
+    wrapBtn.classList.toggle('active', on);
+  });
+
+  const layoutBtn = document.getElementById('btn-layout');
+  layoutBtn.addEventListener('click', () => {
+    const vertical = workspaceEl.classList.toggle('vertical');
+    layoutBtn.textContent = 'Layout: ' + (vertical ? 'stacked' : 'side by side');
+    editorPane.style.flexBasis = '';
+    previewPane.style.flexBasis = '';
+  });
+
+  const fsBtn = document.getElementById('btn-fullscreen');
+  let expanded = false;
+  fsBtn.addEventListener('click', () => {
+    expanded = !expanded;
+    editorPane.style.display = expanded ? 'none' : '';
+    dividerEl.style.display = expanded ? 'none' : '';
+    fsBtn.textContent = expanded ? 'Show editor' : 'Expand preview';
+    fsBtn.classList.toggle('active', expanded);
+  });
+
+  // ----- Draggable divider -----
+  let dragging = false;
+  dividerEl.addEventListener('mousedown', (e) => {
+    dragging = true;
+    dividerEl.classList.add('dragging');
+    document.body.style.userSelect = 'none';
+  });
+  window.addEventListener('mousemove', (e) => {
+    if(!dragging) return;
+    const isVertical = workspaceEl.classList.contains('vertical');
+    const rect = workspaceEl.getBoundingClientRect();
+    if(isVertical){
+      const pct = Math.min(85, Math.max(15, ((e.clientY - rect.top) / rect.height) * 100));
+      editorPane.style.flexBasis = pct + '%';
+      previewPane.style.flexBasis = (100 - pct) + '%';
+    } else {
+      const pct = Math.min(85, Math.max(15, ((e.clientX - rect.left) / rect.width) * 100));
+      editorPane.style.flexBasis = pct + '%';
+      previewPane.style.flexBasis = (100 - pct) + '%';
+    }
+  });
+  window.addEventListener('mouseup', () => {
+    if(dragging){
+      dragging = false;
+      dividerEl.classList.remove('dragging');
+      document.body.style.userSelect = '';
+    }
+  });
+
+  // touch support for divider
+  dividerEl.addEventListener('touchstart', () => { dragging = true; dividerEl.classList.add('dragging'); }, {passive:true});
+  window.addEventListener('touchmove', (e) => {
+    if(!dragging) return;
+    const t = e.touches[0];
+    const isVertical = workspaceEl.classList.contains('vertical');
+    const rect = workspaceEl.getBoundingClientRect();
+    if(isVertical){
+      const pct = Math.min(85, Math.max(15, ((t.clientY - rect.top) / rect.height) * 100));
+      editorPane.style.flexBasis = pct + '%';
+      previewPane.style.flexBasis = (100 - pct) + '%';
+    } else {
+      const pct = Math.min(85, Math.max(15, ((t.clientX - rect.left) / rect.width) * 100));
+      editorPane.style.flexBasis = pct + '%';
+      previewPane.style.flexBasis = (100 - pct) + '%';
+    }
+  }, {passive:true});
+  window.addEventListener('touchend', () => { dragging = false; dividerEl.classList.remove('dragging'); });
+
+  // ----- init -----
+  codeEl.value = SAMPLE;
+  updateGutter();
+  render();
+  updateCaret();
+</script>
+</body>
+</html>
