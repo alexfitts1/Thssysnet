@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Thssysnet Clock</title>
+	<script>
+		function displayLocalTime() {
+			let date = new Date();
+			let localTime = date.toLocaleTimeString();
+			document.getElementById("local-time").innerHTML = localTime;
+		}
+	</script>
+</head>
+<body onload="setInterval(displayLocalTime, 1000)">
+	<h1>Thssysnet Clock:</h1>
+	<div id="local-time"></div>
+</body>
+</html>
