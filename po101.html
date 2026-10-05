@@ -70,6 +70,10 @@ textarea{width:100%;min-height:130px;margin-top:12px;padding:12px;border:1px sol
 .side div{padding:6px 0;border-bottom:1px solid var(--line)}
 .clock{font:600 28px/1 Arial,sans-serif;font-variant-numeric:tabular-nums}
 @media (max-width:760px){.mwrap{grid-template-columns:1fr}.side{position:static;max-height:none}}
+.mg2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.col{display:flex;flex-direction:column;gap:8px;max-height:78vh;overflow:auto;padding-right:4px}
+.col h4{position:sticky;top:0;margin:0;padding:6px 0;background:var(--bg);font:600 13px Arial,sans-serif;color:var(--blue);letter-spacing:.05em;text-transform:uppercase}
+@media (max-width:520px){.mg2{grid-template-columns:1fr}.col{max-height:42vh}}
 </style>
 </head>
 <body>
@@ -237,18 +241,18 @@ function quiz(){
 function match(){
  const src=pool().filter(d=>d[2].length<150);
  if(src.length<2){$("#app").innerHTML=`<div class="panel">Pick a section with short definitions (Part B readings are too long for matching).</div>`;return}
- const T=sh(src.flatMap(d=>[{k:d[1],t:d[1],c:"term"},{k:d[1],t:d[2],c:"def"}]));
+ const T=[...sh(src.map(d=>({k:d[1],t:d[1],c:"term"}))),...sh(src.map(d=>({k:d[1],t:d[2],c:"def"})))];
  let sel=null,done=0,tries=0,t0=0;
  const fmt=ms=>{const s=ms/1000;return Math.floor(s/60)+":"+(s%60).toFixed(1).padStart(4,"0")};
- $("#app").innerHTML=`<div class="row" style="margin:0 0 4px"><div class="clock" id="ck">0:00.0</div><span class="meta" id="st">Stopwatch starts on your first click · ${src.length} pairs</span><button class="btn alt" id="ag">New round</button></div>
- <div class="mwrap"><div class="mg" id="mg">${T.map((x,j)=>`<button class="m ${x.c}" data-j="${j}">${esc(x.t)}</button>`).join("")}</div>
+ $("#app").innerHTML=`<div class="row" style="margin:0 0 4px"><div class="clock" id="ck">0:00.0</div><span class="meta" id="st">Click a term, then its definition. Stopwatch starts on your first click · ${src.length} pairs</span><button class="btn alt" id="ag">New round</button></div>
+ <div class="mwrap"><div class="mg2" id="mg">${["term","def"].map(c=>`<div class="col"><h4>${c==="term"?"Terms":"Definitions"}</h4>${T.map((x,j)=>x.c===c?`<button class="m ${c}" data-j="${j}">${esc(x.t)}</button>`:"").join("")}</div>`).join("")}</div>
  <div class="side"><strong>Matched <span id="mc">0</span> / ${src.length}</strong><div id="sd"></div></div></div>`;
  $("#ag").onclick=go;
  $("#mg").onclick=e=>{const b=e.target.closest(".m");if(!b)return;
   if(!t0){t0=Date.now();MT=setInterval(()=>{$("#ck").textContent=fmt(Date.now()-t0)},100)}
   if(!sel){sel=b;b.classList.add("sel");return}
   if(sel===b){b.classList.remove("sel");sel=null;return}
-  const A=T[sel.dataset.j],B=T[b.dataset.j];tries++;
+  const A=T[sel.dataset.j],B=T[b.dataset.j];if(A.c===B.c){sel.classList.remove("sel");sel=b;b.classList.add("sel");return}tries++;
   if(A.k===B.k&&A.c!==B.c){
    const tm=A.c==="term"?A:B,df=A.c==="def"?A:B;
    sel.remove();b.remove();sel=null;done++;
