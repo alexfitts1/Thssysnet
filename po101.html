@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PO101 Study Guide</title>
+<style>
+:root{--navy:#1d3557;--blue:#2f5d8c;--gold:#c8962e;--bg:#f3f5f8;--card:#fff;--ink:#1c2430;--mute:#5d6b7c;--line:#d5dbe3;--ok:#2e7d4f;--bad:#b23a3a}
+@media (prefers-color-scheme:dark){:root{--bg:#10161f;--card:#1a2331;--ink:#e8edf3;--mute:#9aa8b8;--line:#2c3a4d;--navy:#0b1a30;--blue:#7fa8d6}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Georgia,"Times New Roman",serif}
+header{background:var(--navy);color:#fff;padding:22px 20px 0}
+.wrap{max-width:820px;margin:0 auto}
+.kick{font:600 13px/1 Arial,sans-serif;letter-spacing:.08em;color:var(--gold)}
+h1{margin:6px 0 4px;font-size:34px;line-height:1.1}
+header p{margin:0 0 16px;color:#c9d4e3;font:14px Arial,sans-serif}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav button{font:600 14px Arial,sans-serif;padding:10px 16px;border:0;border-radius:6px 6px 0 0;background:transparent;color:#c9d4e3;cursor:pointer}
+nav button.on{background:var(--bg);color:var(--navy)}
+@media (prefers-color-scheme:dark){nav button.on{color:#fff}}
+main{max-width:820px;margin:0 auto;padding:20px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;font-family:Arial,sans-serif}
+.chips button{padding:6px 12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:20px;font-size:13px;cursor:pointer}
+.chips button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+button:focus-visible,textarea:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.btn{font:600 14px Arial,sans-serif;padding:10px 18px;border:0;border-radius:6px;background:var(--navy);color:#fff;cursor:pointer}
+.btn.alt{background:transparent;color:var(--blue);border:1px solid var(--blue)}
+.btn.ok{background:var(--ok)}.btn.bad{background:var(--bad)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px;font-family:Arial,sans-serif}
+.meta{color:var(--mute);font:14px Arial,sans-serif}
+.flip{perspective:1200px;cursor:pointer;height:320px}
+.in{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.flip.f .in{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--card);border:1px solid var(--line);border-top:6px solid var(--navy);border-radius:6px;padding:22px 26px;overflow:auto;display:flex;flex-direction:column;justify-content:center}
+.back{transform:rotateY(180deg);border-top-color:var(--gold);justify-content:flex-start}
+.tag{font:600 12px Arial,sans-serif;color:var(--blue);margin-bottom:8px}
+.term{font-size:26px;font-weight:bold;line-height:1.25}
+.def{font-size:17px}
+.hint{margin-top:auto;padding-top:12px;font:12px Arial,sans-serif;color:var(--mute)}
+@media (prefers-reduced-motion:reduce){.in{transition:none}}
+.panel{background:var(--card);border:1px solid var(--line);border-top:6px solid var(--navy);border-radius:6px;padding:22px 26px}
+.opt{display:block;width:100%;text-align:left;margin:8px 0;padding:12px 14px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:15px/1.4 Georgia,serif;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--blue)}
+.opt.right{background:#dff1e6;border-color:var(--ok);color:#12351f}
+.opt.wrong{background:#f6dcdc;border-color:var(--bad);color:#4a1414}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:640px){.grid{grid-template-columns:1fr}.flip{height:380px}}
+.m{padding:12px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);font:14px/1.4 Georgia,serif;text-align:left;cursor:pointer}
+.m.sel{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+.m.done{background:#dff1e6;border-color:var(--ok);color:#12351f;cursor:default}
+.m.no{animation:sh .3s;border-color:var(--bad)}
+@keyframes sh{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+textarea{width:100%;min-height:130px;margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:16px/1.5 Georgia,serif;resize:vertical}
+.cmp{margin-top:14px}.cmp h4{margin:12px 0 4px;font:600 13px Arial,sans-serif;color:var(--blue)}
+.cmp div{padding:10px 12px;border-left:4px solid var(--line);background:var(--bg);white-space:pre-wrap}
+.cmp .real{border-left-color:var(--gold)}
+.big{font-size:42px;font-weight:bold}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<div class="kick">PO101 • STUDY GUIDE</div>
+<h1>Introduction to Political Science</h1>
+<p>Core concepts and required readings</p>
+<nav id="nav"></nav>
+</div></header>
+<main>
+<div class="chips" id="chips"></div>
+<div id="app"></div>
+</main>
+<script>
+const SECTIONS={
+"1":"Ch 1 Politics","2":"Ch 2 Ideologies","3":"Ch 3 States","4":"Ch 4 Constitutions","5":"Ch 5 Regimes","15":"Ch 15 Political Economy","B":"Part B Readings"};
+const D=[
+["1","Harold Lasswell (definition of politics)","“Who gets what, when, how.”"],
+["1","David Easton (definition of politics)","“The authoritative allocation of values for a society.”"],
+["1","Focus of political science","The systematic study of power, governance institutions, political behavior, and public policy outcomes."],
+["1","Aristotle","Founder of political science; designated humans as political animals (zoon politikon); classified regimes by ruler count and public intent."],
+["1","Plato","Authored The Republic; proposed governance by ideal philosopher-kings."],
+["1","Niccolò Machiavelli","Authored The Prince; emphasized practical political power and statecraft over conventional morality."],
+["1","Subfields of political science","American Politics, Comparative Politics, International Relations, Political Theory, Public Administration, Public Policy."],
+["1","Milgram Experiment","Demonstrated that individuals frequently defer to authority figures even when commands conflict with conscience, illuminating mechanisms of obedience and compliance within political structures."],
+["1","Bourgeoisie","Capitalist owners of the means of production."],
+["1","Proletariat","Wage-earning working class."],
+["1","Peasants","Agrarian laborers."],
+["1","Marxist core argument","Class struggle over economic production drives historical development."],
+["1","Thomas Hobbes","State of nature is “solitary, poor, nasty, brutish, and short”; favors absolute sovereignty to maintain order."],
+["1","John Locke","Humans possess natural rights (life, liberty, property); governance rests on consent to protect these rights."],
+["1","Jean-Jacques Rousseau","Humans are naturally peaceful in a state of nature but corrupted by civil society; advocates governance through the “general will.”"],
+["1","New Institutionalism","Focuses on how formal structures and informal rules shape political behavior."],
+["1","Rational Choice","Assumes political actors make calculated decisions to maximize personal utility."],
+["1","Modernization Theory","Proposes that economic development fosters social change and democratic transition."],
+["2","Ideology","A coherent set of political beliefs providing a worldview and guide for policy action. Downs: an image of the good society and the primary means of constructing it."],
+["2","Classic Liberalism (Adam Smith, John Locke)","Emphasizes individual liberty, free markets, limited government, and property rights."],
+["2","Modern Liberalism (T.H. Green, FDR)","Advocates government action to address market failures and social inequality."],
+["2","Classic Conservatism (Edmund Burke)","Emphasizes tradition, social hierarchy, order, and organic, gradual reform."],
+["2","Neoconservatism","Blends free-market economics with traditional values and an assertive interventionist foreign policy."],
+["2","Libertarianism","Demands minimal government intervention in both economic markets and social choices."],
+["3","Effective states","Maintain institutional capacity, law enforcement, tax collection, and territorial security."],
+["3","Weak states","Characterized by systemic corruption, fragile rule of law, and weak central authority."],
+["3","Failed states","Suffer a total breakdown of central authority, security, and public services."],
+["3","Devolution","The delegation of power from a central government to regional authorities (frequently utilized in unitary systems)."],
+["3","Single-Member District / FPTP","Winner-take-all system that tends to favor two-party competition (Duverger’s Law)."],
+["3","Proportional Representation (PR)","Allocates legislative seats based on overall party vote percentage, encouraging multi-party representation."],
+["3","Laissez-faire","Minimal state regulation; driven by market forces."],
+["3","Statist","State directly manages key industries to guide economic development."],
+["3","Welfare State","Market economy paired with state social security safety nets."],
+["3","Socialist","Comprehensive state ownership and management of economic production."],
+["4","Judicial review","The legal authority of courts to invalidate statutes or executive actions violating constitutional law."],
+["4","Judicial Activism","Flexible constitutional interpretation addressing contemporary social developments."],
+["4","Judicial Restraint","Strict adherence to constitutional text and original statutory intent."],
+["4","Civil Liberties","Protections restricting government intrusion into individual freedoms (e.g., speech)."],
+["4","Civil Rights","State guarantees of equal treatment and non-discrimination under the law."],
+["5","Democratic regime","Features competitive elections, rule of law, and protected civil liberties."],
+["5","Authoritarian regime","Centralizes power in an executive or ruling elite, limiting political opposition while allowing relative non-political autonomy."],
+["5","Totalitarian regime","Exercises pervasive control over public and private life using state ideology and coercion."],
+["5","Iron Law of Oligarchy (Robert Michels)","All organizations, regardless of democratic intent, eventually become controlled by a small power elite."],
+["5","Elite theorists (Michels, Mosca, C. Wright Mills)","Argue power is concentrated in a ruling minority."],
+["5","Pluralists (Robert Dahl)","Argue power is decentralized and contested among competing interest groups."],
+["15","Mandatory spending","Spending required by existing law, including entitlement programs like Medicare, Social Security, and Medicaid."],
+["15","Discretionary spending","Spending subject to annual congressional appropriations (e.g., Defense, Education)."],
+["15","Keynesianism (John Maynard Keynes)","Advocates government deficit spending during recessions to stimulate aggregate demand."],
+["15","Free-Market / Supply-Side (Friedman, Hayek, Adam Smith)","Advocates deregulation, tax reductions, tight monetary policy, and minimal state intervention."],
+["15","Federal Reserve System (FRB)","Central bank managing US monetary policy, interest rates, and inflation. Kevin Warsh serves as Chair (succeeding Jerome Powell in May 2026)."],
+["B","Q1: Facebook Categorization (Merrill 2016)","Facebook categorizes user political ideologies algorithmically by tracking user engagement, specifically analyzing liked pages, post interactions, and political activity. This automated methodology contrasts with IDEALog, which relies on explicit user responses across a two-dimensional economic and social policy framework. While Facebook provides passive behavioral tracking, IDEALog measures self-reported normative political positions."],
+["B","Q2: Twin Threats to Democracy (Leonhardt 2022)","An acute threat from an antidemocratic movement subverting election outcomes and a chronic threat of public policy becoming disconnected from public opinion due to countermajoritarian institutions. The acute threat is driven primarily by stagnant living standards and cultural anxiety about a changing country. Structural institutions increasingly limit representative responsiveness while undermining public faith in democratic processes."],
+["B","Q3: Climate Change Perception (Carbone 2017)","International populations express higher concern over climate change than Americans due to greater direct environmental vulnerability and lower levels of partisan polarization surrounding climate science. In the US, deep political divisions hinder consensus on environmental risk. Differing public attitudes influence the extent to which governments prioritize environmental regulations alongside economic policy."],
+["B","Q4: US Interest Rate Increases (Sherman 2022)","Fed rate increases affect foreign economies by strengthening the US dollar, raising debt servicing costs for dollar-denominated loans, and driving foreign central banks to consider rate hikes to mitigate capital outflow. A stronger dollar makes imported goods and energy more expensive globally. These pressures increase economic strain across both developing and developed nations."],
+["B","Q5: Global Welfare Comparisons (Brown 2016)","Denmark offers the most social assistance as welfare benefits, while the United Kingdom provides the most housing assistance. US welfare benefits are generally less generous and carry stricter eligibility restrictions than those in peer nations, so the US safety net relies more heavily on targeted, means-tested assistance."],
+["B","Q6: Enacted Budget Provisions & Ideology (Drenon & Yousif 2025)","The budget contains mandatory spending items such as entitlement funding for Medicaid and SNAP alongside discretionary defense and agency allocations. Increased discretionary defense spending is justified through national security and peace-through-strength doctrines. Tightening mandatory eligibility reflects conservative preferences for spending restraint, state-level flexibility, and individual self-reliance."],
+["B","Q7: MENA Faith in Democracy (Williams et al. 2022)","Widespread agreement across surveyed Arab nations that economies remain weak under democratic governance, leading many to prioritize economic stability over political structure. Trust in democratic institutions to manage inflation and job creation has declined significantly, showing growing skepticism about democracy’s capacity to deliver economic security."],
+["B","Q8: Broken Governments & Reforms (Nuwer 2018)","Governments are broken due to short-term election incentives, political gridlock, and institutional designs that fail to address complex, long-term challenges. Proposed fixes include deliberative citizen assemblies and dedicated long-term policy oversight mechanisms, aligning decisions with long-term societal well-being rather than immediate political cycles."],
+["B","Q9: Citizenship Revocation (Nagesh 2022)","Loss of citizenship depends on national statutory frameworks and legal safeguards. In the UK, the government can revoke citizenship on national security grounds without prior notice under border legislation. International conventions limit state power to render individuals stateless, creating ongoing legal and constitutional debates."]
+];
+const $=s=>document.querySelector(s);
+const sh=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+let mode="cards",sec="all";
+const pool=()=>sec==="all"?D:D.filter(d=>d[0]===sec);
+const MODES={cards:"Flashcards",quiz:"Quiz",match:"Matching",type:"Type it"};
+$("#nav").innerHTML=Object.entries(MODES).map(([k,v])=>`<button data-m="${k}">${v}</button>`).join("");
+$("#chips").innerHTML=[["all","All"],...Object.entries(SECTIONS)].map(([k,v])=>`<button data-s="${k}">${v}</button>`).join("");
+$("#nav").onclick=e=>{if(e.target.dataset.m){mode=e.target.dataset.m;go()}};
+$("#chips").onclick=e=>{if(e.target.dataset.s){sec=e.target.dataset.s;go()}};
+function go(){
+ document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.m===mode));
+ document.querySelectorAll("#chips button").forEach(b=>b.classList.toggle("on",b.dataset.s===sec));
+ ({cards,quiz,match,type})[mode]();
+}
+/* FLASHCARDS */
+function cards(){
+ let deck=[...pool()],i=0,known=new Set(),flipped=false;
+ const draw=()=>{
+  const c=deck[i];
+  $("#app").innerHTML=`<div class="meta">Card ${i+1} of ${deck.length} · Known: ${known.size}</div>
+  <div class="flip ${flipped?"f":""}" id="fl" tabindex="0" role="button" aria-label="Flip card"><div class="in">
+   <div class="face"><div class="tag">${SECTIONS[c[0]]}</div><div class="term">${esc(c[1])}</div><div class="hint">Click to reveal definition</div></div>
+   <div class="face back"><div class="tag">${esc(c[1])}</div><div class="def">${esc(c[2])}</div></div></div></div>
+  <div class="row"><button class="btn alt" id="pv">Previous</button><button class="btn alt" id="nx">Next</button>
+  <button class="btn ok" id="kn">${known.has(c[1])?"Unmark known":"Mark known"}</button>
+  <button class="btn alt" id="sf">Shuffle</button></div>`;
+  const fl=$("#fl");const tg=()=>{flipped=!flipped;fl.classList.toggle("f",flipped)};
+  fl.onclick=tg;fl.onkeydown=e=>{if(e.key===" "||e.key==="Enter"){e.preventDefault();tg()}};
+  $("#nx").onclick=()=>{i=(i+1)%deck.length;flipped=false;draw()};
+  $("#pv").onclick=()=>{i=(i-1+deck.length)%deck.length;flipped=false;draw()};
+  $("#sf").onclick=()=>{deck=sh(deck);i=0;flipped=false;draw()};
+  $("#kn").onclick=()=>{known.has(c[1])?known.delete(c[1]):known.add(c[1]);draw()};
+ };draw();
+}
+/* QUIZ */
+function quiz(){
+ const qs=sh(pool()).slice(0,10);let i=0,score=0;
+ const draw=()=>{
+  if(i>=qs.length){$("#app").innerHTML=`<div class="panel"><div class="big">${score} / ${qs.length}</div><p>Quiz complete.</p><button class="btn" id="re">Try again</button></div>`;$("#re").onclick=quiz;return}
+  const q=qs[i];
+  const others=sh(D.filter(d=>d[1]!==q[1]&&(d[0]===q[0]||q[0]==="B"===(d[0]==="B")))).slice(0,3);
+  const opts=sh([q,...others]);
+  $("#app").innerHTML=`<div class="meta">Question ${i+1} of ${qs.length} · Score ${score}</div>
+  <div class="panel"><div class="tag">Which term matches this definition?</div><div class="def">${esc(q[2])}</div>
+  <div id="o">${opts.map((o,k)=>`<button class="opt" data-k="${k}">${esc(o[1])}</button>`).join("")}</div>
+  <div class="row"><button class="btn" id="nq" hidden>Next</button></div></div>`;
+  $("#o").onclick=e=>{const b=e.target.closest(".opt");if(!b||b.disabled)return;
+   const ok=opts[b.dataset.k]===q;if(ok)score++;
+   document.querySelectorAll(".opt").forEach((x,k)=>{x.disabled=true;if(opts[k]===q)x.classList.add("right")});
+   if(!ok)b.classList.add("wrong");
+   $("#nq").hidden=false;$("#nq").focus();$("#nq").onclick=()=>{i++;draw()}};
+ };draw();
+}
+/* MATCHING */
+function match(){
+ const src=sh(pool().filter(d=>d[2].length<150)).slice(0,6);
+ if(src.length<2){$("#app").innerHTML=`<div class="panel">Pick a section with short definitions (Part B readings are too long for matching).</div>`;return}
+ let L=sh(src),R=sh(src),sel=null,done=0,tries=0;
+ $("#app").innerHTML=`<div class="meta" id="st">Match each term to its definition. Attempts: 0</div><div class="grid" style="margin-top:12px">
+ <div>${L.map(d=>`<button class="m" style="width:100%;margin-bottom:10px" data-s="l" data-t="${esc(d[1])}">${esc(d[1])}</button>`).join("")}</div>
+ <div>${R.map(d=>`<button class="m" style="width:100%;margin-bottom:10px" data-s="r" data-t="${esc(d[1])}">${esc(d[2])}</button>`).join("")}</div></div>
+ <div class="row"><button class="btn alt" id="ag">New round</button></div>`;
+ $("#ag").onclick=match;
+ $("#app").onclick=e=>{const b=e.target.closest(".m");if(!b||b.classList.contains("done"))return;
+  if(!sel||sel.dataset.s===b.dataset.s){if(sel)sel.classList.remove("sel");sel=b;b.classList.add("sel");return}
+  tries++;sel.classList.remove("sel");
+  if(sel.dataset.t===b.dataset.t){sel.classList.add("done");b.classList.add("done");done++;
+   if(done===src.length)$("#st").textContent=`Done! ${tries} attempts for ${src.length} pairs.`}
+  else{[sel,b].forEach(x=>{x.classList.add("no");setTimeout(()=>x.classList.remove("no"),400)})}
+  if(done<src.length)$("#st").textContent=`Match each term to its definition. Attempts: ${tries}`;
+  sel=null};
+}
+/* TYPED RESPONSE */
+function type(){
+ const qs=sh(pool());let i=0,got=0,seen=0;
+ const draw=()=>{
+  if(i>=qs.length){$("#app").innerHTML=`<div class="panel"><div class="big">${got} / ${seen}</div><p>Marked correct. Round complete.</p><button class="btn" id="re">Go again</button></div>`;$("#re").onclick=type;return}
+  const q=qs[i];
+  $("#app").innerHTML=`<div class="meta">Term ${i+1} of ${qs.length} · Self-scored: ${got} / ${seen}</div>
+  <div class="panel"><div class="tag">Define this from memory</div><div class="term">${esc(q[1])}</div>
+  <textarea id="ans" placeholder="Type your definition…"></textarea>
+  <div class="row"><button class="btn" id="sb">Submit</button></div><div id="out"></div></div>`;
+  $("#sb").onclick=()=>{
+   const a=$("#ans").value.trim()||"(no answer)";$("#ans").disabled=true;$("#sb").hidden=true;
+   $("#out").innerHTML=`<div class="cmp"><h4>Term</h4><div>${esc(q[1])}</div><h4>Real definition</h4><div class="real">${esc(q[2])}</div><h4>What you said</h4><div>${esc(a)}</div></div>
+   <div class="row"><span class="meta">Did you get it?</span><button class="btn ok" id="y">Got it</button><button class="btn bad" id="n">Missed it</button></div>`;
+   const nx=r=>{seen++;if(r)got++;i++;draw()};$("#y").onclick=()=>nx(1);$("#n").onclick=()=>nx(0)};
+ };draw();
+}
+go();
+</script>
+</body>
+</html>
