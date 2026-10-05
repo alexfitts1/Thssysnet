@@ -74,17 +74,24 @@ textarea{width:100%;min-height:130px;margin-top:12px;padding:12px;border:1px sol
 .col{display:flex;flex-direction:column;gap:8px;max-height:78vh;overflow:auto;padding-right:4px}
 .col h4{position:sticky;top:0;margin:0;padding:6px 0;background:var(--bg);font:600 13px Arial,sans-serif;color:var(--blue);letter-spacing:.05em;text-transform:uppercase}
 @media (max-width:520px){.mg2{grid-template-columns:1fr}.col{max-height:42vh}}
+#hb{float:right;color:#fff;background:rgba(255,255,255,.14);padding:4px 10px;border-radius:12px;font-size:12px;letter-spacing:0}
+#sbar{margin-bottom:14px}
+#find{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);font:15px Arial,sans-serif}
+mark{background:#bfe5cb;color:#12351f;padding:0 2px;border-radius:2px}
+.opt.gone{opacity:.35;text-decoration:line-through}
+.m.hint{box-shadow:0 0 0 3px var(--gold);background:#fff3d1;color:#1c2430}
 </style>
 </head>
 <body>
 <header><div class="wrap">
-<div class="kick">PO101 • STUDY GUIDE</div>
+<div class="kick">PO101 • STUDY GUIDE<span id="hb"></span></div>
 <h1>Introduction to Political Science</h1>
 <p>Midterm: Thursday, Oct 8, 2026, 11:00 AM–12:15 PM ET · Part A: 30 questions, 2 pts each · Part B: answer 4 of 6 short essays, 10 pts each</p>
 <nav id="nav"></nav>
 </div></header>
 <main>
 <div class="chips" id="chips"></div>
+<div id="sbar" hidden><input id="find" type="search" placeholder="Search terms and definitions…" aria-label="Search cards"></div>
 <div id="app"></div>
 </main>
 <script>
@@ -168,22 +175,34 @@ const D=[
 const $=s=>document.querySelector(s);
 const sh=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
-let MT=null,mode="cards",sec="all";
-const pool=()=>sec==="all"?D:D.filter(d=>d[0]===sec);
+let MT=null,H=5,qry="",mode="cards",on=new Set(Object.keys(SECTIONS));
+const hb=()=>{$("#hb").textContent="Hints left: "+H+" / 5"};
+const useHint=()=>{if(H<1)return false;H--;hb();return true};
+const hw=(t,n)=>t.split(/\s+/).slice(0,n).join(" ")+"…";
+const STOP=new Set("a an the of and or to in on for by with as is are be that this it its their his her from at than which who whom while when into over under about between not no but so such can may also each any all was were been has have had".split(" "));
+const clean=w=>w.toLowerCase().replace(/[^a-z0-9]/g,"");
+const stem=w=>w.length>3&&w.endsWith("s")&&!w.endsWith("ss")?w.slice(0,-1):w;
+const keyw=t=>t.split(/\s+/).map(clean).filter(w=>w&&!STOP.has(w)).map(stem);
+const mark=(t,set)=>t.split(/(\s+)/).map(p=>{const c=clean(p);return c&&!STOP.has(c)&&set.has(stem(c))?`<mark>${esc(p)}</mark>`:esc(p)}).join("");
+const pool=()=>D.filter(d=>on.has(d[0]));
+const found=()=>pool().filter(d=>!qry||(d[1]+" "+d[2]).toLowerCase().includes(qry));
 const MODES={cards:"Flashcards",tiles:"Tile wall",quiz:"Quiz",match:"Matching",type:"Type it"};
 $("#nav").innerHTML=Object.entries(MODES).map(([k,v])=>`<button data-m="${k}">${v}</button>`).join("");
-$("#chips").innerHTML=[["all","All"],...Object.entries(SECTIONS)].map(([k,v])=>`<button data-s="${k}">${v}</button>`).join("");
+$("#chips").innerHTML=[["all","Select all"],["none","Clear"],...Object.entries(SECTIONS)].map(([k,v])=>`<button data-s="${k}">${v}</button>`).join("");
 $("#nav").onclick=e=>{if(e.target.dataset.m){mode=e.target.dataset.m;go()}};
-$("#chips").onclick=e=>{if(e.target.dataset.s){sec=e.target.dataset.s;go()}};
+$("#chips").onclick=e=>{const k=e.target.dataset.s;if(!k)return;if(k==="all")on=new Set(Object.keys(SECTIONS));else if(k==="none")on=new Set();else on.has(k)?on.delete(k):on.add(k);go()};
+$("#find").oninput=e=>{qry=e.target.value.trim().toLowerCase();go()};
 function go(){
- clearInterval(MT);$("#app").onclick=null;$("#app").onkeydown=null;$("#app").className=(mode==="tiles"||mode==="match")?"":"narrow";
+ clearInterval(MT);$("#app").onclick=null;$("#app").onkeydown=null;$("#app").className=(mode==="tiles"||mode==="match")?"":"narrow";$("#sbar").hidden=!(mode==="cards"||mode==="tiles");hb();
  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.m===mode));
- document.querySelectorAll("#chips button").forEach(b=>b.classList.toggle("on",b.dataset.s===sec));
+ document.querySelectorAll("#chips button").forEach(b=>b.classList.toggle("on",on.has(b.dataset.s)));
+ const n=(mode==="cards"||mode==="tiles")?found().length:pool().length;
+ if(!n){$("#app").innerHTML=`<div class="panel">No cards to show. Select at least one chapter${qry?" or clear the search":""}.</div>`;return}
  ({cards,tiles,quiz,match,type})[mode]();
 }
 /* FLASHCARDS (known / still learning, auto-advance) */
 function cards(){
- let deck=[...pool()],i=0,flipped=false,yes=[],no=[];
+ const base=found();let deck=qry?base:sh(base),i=0,flipped=false,yes=[],no=[],shown=new Set();
  const draw=()=>{
   if(i>=deck.length){
    $("#app").innerHTML=`<div class="panel"><div class="big">${yes.length} known · ${no.length} still learning</div>
@@ -193,20 +212,21 @@ function cards(){
   const c=deck[i];
   $("#app").innerHTML=`<div class="meta">Card ${i+1} of ${deck.length} · Known ${yes.length} · Still learning ${no.length}</div>
   <div class="flip ${flipped?"f":""}" id="fl" tabindex="0" role="button" aria-label="Flip card"><div class="in">
-   <div class="face"><div class="tag">${SECTIONS[c[0]]}</div><div class="term">${esc(c[1])}</div><div class="hint">Click to reveal definition</div></div>
+   <div class="face"><div class="tag">${SECTIONS[c[0]]}</div><div class="term">${esc(c[1])}</div><div class="hint" id="hx">${shown.has(c)?"Hint: starts “"+hw(c[2],3)+"”":"Click to reveal definition"}</div></div>
    <div class="face back"><div class="tag">${esc(c[1])}</div><div class="def">${esc(c[2])}</div></div></div></div>
-  <div class="row"><button class="btn bad" id="no">Still learning</button><button class="btn ok" id="yes">Known</button>
+  <div class="row"><button class="btn bad" id="no">Still learning</button><button class="btn ok" id="yes">Known</button><button class="btn alt" id="ht" ${H?"":"disabled"}>Hint (${H} left)</button>
   <button class="btn alt" id="sf">Shuffle</button></div>`;
   const fl=$("#fl");const tg=()=>{flipped=!flipped;fl.classList.toggle("f",flipped)};
   fl.onclick=tg;fl.onkeydown=e=>{if(e.key===" "||e.key==="Enter"){e.preventDefault();tg()}};
   const nx=a=>{a.push(c);i++;flipped=false;draw()};
+  $("#ht").onclick=()=>{if(!shown.has(c)){if(!useHint())return;shown.add(c)}$("#hx").textContent="Hint: starts “"+hw(c[2],3)+"”";$("#ht").textContent=`Hint (${H} left)`;if(!H)$("#ht").disabled=true;flipped=false;fl.classList.remove("f")};
   $("#no").onclick=()=>nx(no);$("#yes").onclick=()=>nx(yes);
   $("#sf").onclick=()=>{deck=sh(deck);i=0;yes=[];no=[];flipped=false;draw()};
  };draw();
 }
 /* TILE WALL */
 function tiles(){
- let d=sh(pool());
+ let d=qry?found():sh(found());
  const draw=()=>{
   $("#app").innerHTML=`<div class="row" style="margin:0"><span class="meta">${d.length} tiles · click any tile to flip it</span><button class="btn alt" id="fa">Flip all</button><button class="btn alt" id="rs">Flip all back</button><button class="btn alt" id="sf">Shuffle</button></div>
   <div class="tiles">${d.map(c=>`<div class="t ${c[2].length>190?"long":""}" tabindex="0" role="button" aria-label="Flip tile"><div class="in"><div class="face"><div class="tag">${SECTIONS[c[0]]}</div><div class="term" style="font-size:16px">${esc(c[1])}</div></div><div class="face back"><div class="def" style="font-size:13px">${esc(c[2])}</div></div></div></div>`).join("")}</div>`;
@@ -229,12 +249,13 @@ function quiz(){
   $("#app").innerHTML=`<div class="meta">Question ${i+1} of ${qs.length} · Score ${score}</div>
   <div class="panel"><div class="tag">Which term matches this definition?</div><div class="def">${esc(q[2])}</div>
   <div id="o">${opts.map((o,k)=>`<button class="opt" data-k="${k}">${esc(o[1])}</button>`).join("")}</div>
-  <div class="row"><button class="btn" id="nq" hidden>Next</button></div></div>`;
+  <div class="row"><button class="btn alt" id="ht" ${H?"":"disabled"}>Hint (${H} left)</button><button class="btn" id="nq" hidden>Next</button></div></div>`;
+  $("#ht").onclick=()=>{if(!useHint())return;sh([...document.querySelectorAll(".opt")].filter((x,k)=>opts[k]!==q)).slice(0,2).forEach(x=>{x.disabled=true;x.classList.add("gone")});$("#ht").disabled=true;$("#ht").textContent="Hint used"};
   $("#o").onclick=e=>{const b=e.target.closest(".opt");if(!b||b.disabled)return;
    const ok=opts[b.dataset.k]===q;if(ok)score++;
    document.querySelectorAll(".opt").forEach((x,k)=>{x.disabled=true;if(opts[k]===q)x.classList.add("right")});
    if(!ok)b.classList.add("wrong");
-   $("#nq").hidden=false;$("#nq").focus();$("#nq").onclick=()=>{i++;draw()}};
+   $("#nq").hidden=false;$("#ht").disabled=true;$("#nq").focus();$("#nq").onclick=()=>{i++;draw()}};
  };draw();
 }
 /* MATCHING (all tiles at once, stopwatch, matches move to the side) */
@@ -244,10 +265,12 @@ function match(){
  const T=[...sh(src.map(d=>({k:d[1],t:d[1],c:"term"}))),...sh(src.map(d=>({k:d[1],t:d[2],c:"def"})))];
  let sel=null,done=0,tries=0,t0=0;
  const fmt=ms=>{const s=ms/1000;return Math.floor(s/60)+":"+(s%60).toFixed(1).padStart(4,"0")};
- $("#app").innerHTML=`<div class="row" style="margin:0 0 4px"><div class="clock" id="ck">0:00.0</div><span class="meta" id="st">Click a term, then its definition. Stopwatch starts on your first click · ${src.length} pairs</span><button class="btn alt" id="ag">New round</button></div>
+ $("#app").innerHTML=`<div class="row" style="margin:0 0 4px"><div class="clock" id="ck">0:00.0</div><span class="meta" id="st">Click a term, then its definition. Stopwatch starts on your first click · ${src.length} pairs</span><button class="btn alt" id="ht" ${H?"":"disabled"}>Hint (${H} left)</button><button class="btn alt" id="ag">New round</button></div>
  <div class="mwrap"><div class="mg2" id="mg">${["term","def"].map(c=>`<div class="col"><h4>${c==="term"?"Terms":"Definitions"}</h4>${T.map((x,j)=>x.c===c?`<button class="m ${c}" data-j="${j}">${esc(x.t)}</button>`:"").join("")}</div>`).join("")}</div>
  <div class="side"><strong>Matched <span id="mc">0</span> / ${src.length}</strong><div id="sd"></div></div></div>`;
  $("#ag").onclick=go;
+ $("#ht").onclick=()=>{const ms=[...document.querySelectorAll(".m")];if(!ms.length||!useHint())return;const ks=[...new Set(ms.map(x=>T[x.dataset.j].k))];const k=sel?T[sel.dataset.j].k:ks[Math.floor(Math.random()*ks.length)];
+  ms.forEach(x=>{if(T[x.dataset.j].k===k){x.classList.add("hint");setTimeout(()=>x.classList.remove("hint"),2500)}});$("#ht").textContent=`Hint (${H} left)`;if(!H)$("#ht").disabled=true};
  $("#mg").onclick=e=>{const b=e.target.closest(".m");if(!b)return;
   if(!t0){t0=Date.now();MT=setInterval(()=>{$("#ck").textContent=fmt(Date.now()-t0)},100)}
   if(!sel){sel=b;b.classList.add("sel");return}
@@ -263,19 +286,24 @@ function match(){
    [sel,b].forEach(x=>{x.classList.remove("sel");x.classList.add("no");setTimeout(()=>x.classList.remove("no"),400)});sel=null}
  };
 }
-/* TYPED RESPONSE */
+/* TYPED RESPONSE (word-match highlighting + percent) */
 function type(){
  const qs=sh(pool());let i=0,got=0,seen=0;
  const draw=()=>{
   if(i>=qs.length){$("#app").innerHTML=`<div class="panel"><div class="big">${got} / ${seen}</div><p>Marked correct. Round complete.</p><button class="btn" id="re">Go again</button></div>`;$("#re").onclick=type;return}
-  const q=qs[i];
+  const q=qs[i];let hinted=false;
   $("#app").innerHTML=`<div class="meta">Term ${i+1} of ${qs.length} · Self-scored: ${got} / ${seen}</div>
   <div class="panel"><div class="tag">Define this from memory</div><div class="term">${esc(q[1])}</div>
   <textarea id="ans" placeholder="Type your definition…"></textarea>
-  <div class="row"><button class="btn" id="sb">Submit</button></div><div id="out"></div></div>`;
+  <div class="row"><button class="btn" id="sb">Submit</button><button class="btn alt" id="ht" ${H?"":"disabled"}>Hint (${H} left)</button></div>
+  <div id="hx" class="meta" style="margin-top:8px"></div><div id="out"></div></div>`;
+  $("#ht").onclick=()=>{if(!hinted){if(!useHint())return;hinted=true}$("#hx").textContent="Hint: the definition starts “"+hw(q[2],4)+"”";$("#ht").textContent=`Hint (${H} left)`;if(!H)$("#ht").disabled=true};
   $("#sb").onclick=()=>{
-   const a=$("#ans").value.trim()||"(no answer)";$("#ans").disabled=true;$("#sb").hidden=true;
-   $("#out").innerHTML=`<div class="cmp"><h4>Term</h4><div>${esc(q[1])}</div><h4>Real definition</h4><div class="real">${esc(q[2])}</div><h4>What you said</h4><div>${esc(a)}</div></div>
+   const raw=$("#ans").value.trim(),a=raw||"(no answer)";$("#ans").disabled=true;$("#sb").hidden=true;$("#ht").hidden=true;
+   const dk=new Set(keyw(q[2])),ak=new Set(keyw(raw)),hit=new Set([...dk].filter(w=>ak.has(w))),pct=dk.size?Math.round(100*hit.size/dk.size):0;
+   $("#out").innerHTML=`<div class="cmp"><p class="big" style="margin:0">${pct}%</p><p class="meta" style="margin:0">${hit.size} of ${dk.size} key words from the definition appeared in your answer</p>
+   <h4>Term</h4><div>${esc(q[1])}</div><h4>Real definition (words you matched highlighted)</h4><div class="real">${mark(q[2],hit)}</div>
+   <h4>What you said (matching words highlighted)</h4><div>${mark(a,hit)}</div></div>
    <div class="row"><span class="meta">Did you get it?</span><button class="btn ok" id="y">Got it</button><button class="btn bad" id="n">Missed it</button></div>`;
    const nx=r=>{seen++;if(r)got++;i++;draw()};$("#y").onclick=()=>nx(1);$("#n").onclick=()=>nx(0)};
  };draw();
