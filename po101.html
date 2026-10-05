@@ -10,7 +10,7 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Georgia,"Times New Roman",serif}
 header{background:var(--navy);color:#fff;padding:22px 20px 0}
-.wrap{max-width:820px;margin:0 auto}
+.wrap{max-width:1100px;margin:0 auto}
 .kick{font:600 13px/1 Arial,sans-serif;letter-spacing:.08em;color:var(--gold)}
 h1{margin:6px 0 4px;font-size:34px;line-height:1.1}
 header p{margin:0 0 16px;color:#c9d4e3;font:14px Arial,sans-serif}
@@ -18,7 +18,7 @@ nav{display:flex;gap:4px;flex-wrap:wrap}
 nav button{font:600 14px Arial,sans-serif;padding:10px 16px;border:0;border-radius:6px 6px 0 0;background:transparent;color:#c9d4e3;cursor:pointer}
 nav button.on{background:var(--bg);color:var(--navy)}
 @media (prefers-color-scheme:dark){nav button.on{color:#fff}}
-main{max-width:820px;margin:0 auto;padding:20px}
+main{max-width:1100px;margin:0 auto;padding:20px}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;font-family:Arial,sans-serif}
 .chips button{padding:6px 12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:20px;font-size:13px;cursor:pointer}
 .chips button.on{background:var(--blue);border-color:var(--blue);color:#fff}
@@ -55,13 +55,28 @@ textarea{width:100%;min-height:130px;margin-top:12px;padding:12px;border:1px sol
 .cmp div{padding:10px 12px;border-left:4px solid var(--line);background:var(--bg);white-space:pre-wrap}
 .cmp .real{border-left-color:var(--gold)}
 .big{font-size:42px;font-weight:bold}
+.narrow{max-width:820px;margin:0 auto}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));grid-auto-rows:130px;grid-auto-flow:dense;gap:10px;margin-top:14px}
+.t{cursor:pointer;perspective:900px;height:100%}
+.t.f .in{transform:rotateY(180deg)}
+.t.long{grid-column:span 2;grid-row:span 2}
+.t .face{padding:12px 14px;border-top-width:4px}
+.t .back{font-size:13px;line-height:1.4}
+.mwrap{display:grid;grid-template-columns:1fr 290px;gap:16px;margin-top:12px;align-items:start}
+.mg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.m.term{font-weight:bold;border-top:4px solid var(--navy)}
+.m.def{border-top:4px solid var(--gold);font-size:13px}
+.side{position:sticky;top:8px;max-height:85vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-top:6px solid var(--ok);border-radius:6px;padding:12px 14px;font:13px/1.4 Arial,sans-serif}
+.side div{padding:6px 0;border-bottom:1px solid var(--line)}
+.clock{font:600 28px/1 Arial,sans-serif;font-variant-numeric:tabular-nums}
+@media (max-width:760px){.mwrap{grid-template-columns:1fr}.side{position:static;max-height:none}}
 </style>
 </head>
 <body>
 <header><div class="wrap">
 <div class="kick">PO101 • STUDY GUIDE</div>
 <h1>Introduction to Political Science</h1>
-<p>Core concepts and required readings</p>
+<p>Midterm: Thursday, Oct 8, 2026, 11:00 AM–12:15 PM ET · Part A: 30 questions, 2 pts each · Part B: answer 4 of 6 short essays, 10 pts each</p>
 <nav id="nav"></nav>
 </div></header>
 <main>
@@ -122,6 +137,20 @@ const D=[
 ["15","Keynesianism (John Maynard Keynes)","Advocates government deficit spending during recessions to stimulate aggregate demand."],
 ["15","Free-Market / Supply-Side (Friedman, Hayek, Adam Smith)","Advocates deregulation, tax reductions, tight monetary policy, and minimal state intervention."],
 ["15","Federal Reserve System (FRB)","Central bank managing US monetary policy, interest rates, and inflation. Kevin Warsh serves as Chair (succeeding Jerome Powell in May 2026)."],
+["1","Why we use theories","Theories simplify complex political reality, organize observations, explain why events happen, and help predict future outcomes."],
+["2","Marxism","Capitalism pits the bourgeoisie against the exploited proletariat; Marx argued class struggle would end in revolution and a classless society."],
+["3","Federal system","Power is constitutionally divided between a central government and regional governments. Advantage: local autonomy and fit for diverse populations. Disadvantage: policy inconsistency across regions and overlapping authority."],
+["3","Unitary system","Authority is concentrated in the central government, which may delegate power to regions (devolution). Advantage: uniform policy and efficiency. Disadvantage: less responsive to regional differences."],
+["4","Constitutionalism","The principle that government power is limited by a constitution and the rule of law, protecting citizens’ rights."],
+["4","Judicial review in practice","Courts such as the US Supreme Court (Marbury v. Madison, 1803) can strike down laws that violate the constitution."],
+["4","Who practices activism vs. restraint?","Judicial activism is generally associated with liberals; judicial restraint with conservatives."],
+["5","Direct democracy","Citizens decide policy themselves, e.g., through referendums or town meetings."],
+["5","Representative democracy","Citizens elect officials to make policy decisions on their behalf."],
+["5","Transitional regime","A regime moving between types, often from authoritarian rule toward democracy, with unsettled institutions."],
+["5","Totalitarian vs. authoritarian","Authoritarian regimes limit political opposition but leave some non-political autonomy; totalitarian regimes control public and private life through state ideology and coercion."],
+["15","Entitlement programs","Programs guaranteeing benefits to everyone who meets eligibility rules (Social Security, Medicare, Medicaid); they fall under mandatory spending."],
+["15","Budget deficit vs. trade deficit","A budget deficit is when government spends more than it collects in revenue in a year; a trade deficit is when a country imports more than it exports."],
+["15","Head of the Federal Reserve","Kevin Warsh serves as Chair of the Federal Reserve (succeeding Jerome Powell in May 2026)."],
 ["B","Q1: Facebook Categorization (Merrill 2016)","Facebook categorizes user political ideologies algorithmically by tracking user engagement, specifically analyzing liked pages, post interactions, and political activity. This automated methodology contrasts with IDEALog, which relies on explicit user responses across a two-dimensional economic and social policy framework. While Facebook provides passive behavioral tracking, IDEALog measures self-reported normative political positions."],
 ["B","Q2: Twin Threats to Democracy (Leonhardt 2022)","An acute threat from an antidemocratic movement subverting election outcomes and a chronic threat of public policy becoming disconnected from public opinion due to countermajoritarian institutions. The acute threat is driven primarily by stagnant living standards and cultural anxiety about a changing country. Structural institutions increasingly limit representative responsiveness while undermining public faith in democratic processes."],
 ["B","Q3: Climate Change Perception (Carbone 2017)","International populations express higher concern over climate change than Americans due to greater direct environmental vulnerability and lower levels of partisan polarization surrounding climate science. In the US, deep political divisions hinder consensus on environmental risk. Differing public attitudes influence the extent to which governments prioritize environmental regulations alongside economic policy."],
@@ -135,36 +164,54 @@ const D=[
 const $=s=>document.querySelector(s);
 const sh=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
-let mode="cards",sec="all";
+let MT=null,mode="cards",sec="all";
 const pool=()=>sec==="all"?D:D.filter(d=>d[0]===sec);
-const MODES={cards:"Flashcards",quiz:"Quiz",match:"Matching",type:"Type it"};
+const MODES={cards:"Flashcards",tiles:"Tile wall",quiz:"Quiz",match:"Matching",type:"Type it"};
 $("#nav").innerHTML=Object.entries(MODES).map(([k,v])=>`<button data-m="${k}">${v}</button>`).join("");
 $("#chips").innerHTML=[["all","All"],...Object.entries(SECTIONS)].map(([k,v])=>`<button data-s="${k}">${v}</button>`).join("");
 $("#nav").onclick=e=>{if(e.target.dataset.m){mode=e.target.dataset.m;go()}};
 $("#chips").onclick=e=>{if(e.target.dataset.s){sec=e.target.dataset.s;go()}};
 function go(){
+ clearInterval(MT);$("#app").onclick=null;$("#app").onkeydown=null;$("#app").className=(mode==="tiles"||mode==="match")?"":"narrow";
  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.m===mode));
  document.querySelectorAll("#chips button").forEach(b=>b.classList.toggle("on",b.dataset.s===sec));
- ({cards,quiz,match,type})[mode]();
+ ({cards,tiles,quiz,match,type})[mode]();
 }
-/* FLASHCARDS */
+/* FLASHCARDS (known / still learning, auto-advance) */
 function cards(){
- let deck=[...pool()],i=0,known=new Set(),flipped=false;
+ let deck=[...pool()],i=0,flipped=false,yes=[],no=[];
  const draw=()=>{
+  if(i>=deck.length){
+   $("#app").innerHTML=`<div class="panel"><div class="big">${yes.length} known · ${no.length} still learning</div>
+   <div class="row"><button class="btn" id="rv" ${no.length?"":"hidden"}>Review the ${no.length} I missed</button><button class="btn alt" id="rs">Start over</button></div></div>`;
+   $("#rv").onclick=()=>{deck=sh(no);no=[];yes=[];i=0;flipped=false;draw()};
+   $("#rs").onclick=cards;return}
   const c=deck[i];
-  $("#app").innerHTML=`<div class="meta">Card ${i+1} of ${deck.length} · Known: ${known.size}</div>
+  $("#app").innerHTML=`<div class="meta">Card ${i+1} of ${deck.length} · Known ${yes.length} · Still learning ${no.length}</div>
   <div class="flip ${flipped?"f":""}" id="fl" tabindex="0" role="button" aria-label="Flip card"><div class="in">
    <div class="face"><div class="tag">${SECTIONS[c[0]]}</div><div class="term">${esc(c[1])}</div><div class="hint">Click to reveal definition</div></div>
    <div class="face back"><div class="tag">${esc(c[1])}</div><div class="def">${esc(c[2])}</div></div></div></div>
-  <div class="row"><button class="btn alt" id="pv">Previous</button><button class="btn alt" id="nx">Next</button>
-  <button class="btn ok" id="kn">${known.has(c[1])?"Unmark known":"Mark known"}</button>
+  <div class="row"><button class="btn bad" id="no">Still learning</button><button class="btn ok" id="yes">Known</button>
   <button class="btn alt" id="sf">Shuffle</button></div>`;
   const fl=$("#fl");const tg=()=>{flipped=!flipped;fl.classList.toggle("f",flipped)};
   fl.onclick=tg;fl.onkeydown=e=>{if(e.key===" "||e.key==="Enter"){e.preventDefault();tg()}};
-  $("#nx").onclick=()=>{i=(i+1)%deck.length;flipped=false;draw()};
-  $("#pv").onclick=()=>{i=(i-1+deck.length)%deck.length;flipped=false;draw()};
-  $("#sf").onclick=()=>{deck=sh(deck);i=0;flipped=false;draw()};
-  $("#kn").onclick=()=>{known.has(c[1])?known.delete(c[1]):known.add(c[1]);draw()};
+  const nx=a=>{a.push(c);i++;flipped=false;draw()};
+  $("#no").onclick=()=>nx(no);$("#yes").onclick=()=>nx(yes);
+  $("#sf").onclick=()=>{deck=sh(deck);i=0;yes=[];no=[];flipped=false;draw()};
+ };draw();
+}
+/* TILE WALL */
+function tiles(){
+ let d=sh(pool());
+ const draw=()=>{
+  $("#app").innerHTML=`<div class="row" style="margin:0"><span class="meta">${d.length} tiles · click any tile to flip it</span><button class="btn alt" id="fa">Flip all</button><button class="btn alt" id="rs">Flip all back</button><button class="btn alt" id="sf">Shuffle</button></div>
+  <div class="tiles">${d.map(c=>`<div class="t ${c[2].length>190?"long":""}" tabindex="0" role="button" aria-label="Flip tile"><div class="in"><div class="face"><div class="tag">${SECTIONS[c[0]]}</div><div class="term" style="font-size:16px">${esc(c[1])}</div></div><div class="face back"><div class="def" style="font-size:13px">${esc(c[2])}</div></div></div></div>`).join("")}</div>`;
+  const all=()=>document.querySelectorAll(".t");
+  $("#app").onclick=e=>{const t=e.target.closest(".t");if(t)t.classList.toggle("f")};
+  $("#app").onkeydown=e=>{if(e.key===" "||e.key==="Enter"){const t=e.target.closest(".t");if(t){e.preventDefault();t.classList.toggle("f")}}};
+  $("#fa").onclick=()=>all().forEach(t=>t.classList.add("f"));
+  $("#rs").onclick=()=>all().forEach(t=>t.classList.remove("f"));
+  $("#sf").onclick=()=>{d=sh(d);draw()};
  };draw();
 }
 /* QUIZ */
@@ -186,24 +233,31 @@ function quiz(){
    $("#nq").hidden=false;$("#nq").focus();$("#nq").onclick=()=>{i++;draw()}};
  };draw();
 }
-/* MATCHING */
+/* MATCHING (all tiles at once, stopwatch, matches move to the side) */
 function match(){
- const src=sh(pool().filter(d=>d[2].length<150)).slice(0,6);
+ const src=pool().filter(d=>d[2].length<150);
  if(src.length<2){$("#app").innerHTML=`<div class="panel">Pick a section with short definitions (Part B readings are too long for matching).</div>`;return}
- let L=sh(src),R=sh(src),sel=null,done=0,tries=0;
- $("#app").innerHTML=`<div class="meta" id="st">Match each term to its definition. Attempts: 0</div><div class="grid" style="margin-top:12px">
- <div>${L.map(d=>`<button class="m" style="width:100%;margin-bottom:10px" data-s="l" data-t="${esc(d[1])}">${esc(d[1])}</button>`).join("")}</div>
- <div>${R.map(d=>`<button class="m" style="width:100%;margin-bottom:10px" data-s="r" data-t="${esc(d[1])}">${esc(d[2])}</button>`).join("")}</div></div>
- <div class="row"><button class="btn alt" id="ag">New round</button></div>`;
- $("#ag").onclick=match;
- $("#app").onclick=e=>{const b=e.target.closest(".m");if(!b||b.classList.contains("done"))return;
-  if(!sel||sel.dataset.s===b.dataset.s){if(sel)sel.classList.remove("sel");sel=b;b.classList.add("sel");return}
-  tries++;sel.classList.remove("sel");
-  if(sel.dataset.t===b.dataset.t){sel.classList.add("done");b.classList.add("done");done++;
-   if(done===src.length)$("#st").textContent=`Done! ${tries} attempts for ${src.length} pairs.`}
-  else{[sel,b].forEach(x=>{x.classList.add("no");setTimeout(()=>x.classList.remove("no"),400)})}
-  if(done<src.length)$("#st").textContent=`Match each term to its definition. Attempts: ${tries}`;
-  sel=null};
+ const T=sh(src.flatMap(d=>[{k:d[1],t:d[1],c:"term"},{k:d[1],t:d[2],c:"def"}]));
+ let sel=null,done=0,tries=0,t0=0;
+ const fmt=ms=>{const s=ms/1000;return Math.floor(s/60)+":"+(s%60).toFixed(1).padStart(4,"0")};
+ $("#app").innerHTML=`<div class="row" style="margin:0 0 4px"><div class="clock" id="ck">0:00.0</div><span class="meta" id="st">Stopwatch starts on your first click · ${src.length} pairs</span><button class="btn alt" id="ag">New round</button></div>
+ <div class="mwrap"><div class="mg" id="mg">${T.map((x,j)=>`<button class="m ${x.c}" data-j="${j}">${esc(x.t)}</button>`).join("")}</div>
+ <div class="side"><strong>Matched <span id="mc">0</span> / ${src.length}</strong><div id="sd"></div></div></div>`;
+ $("#ag").onclick=go;
+ $("#mg").onclick=e=>{const b=e.target.closest(".m");if(!b)return;
+  if(!t0){t0=Date.now();MT=setInterval(()=>{$("#ck").textContent=fmt(Date.now()-t0)},100)}
+  if(!sel){sel=b;b.classList.add("sel");return}
+  if(sel===b){b.classList.remove("sel");sel=null;return}
+  const A=T[sel.dataset.j],B=T[b.dataset.j];tries++;
+  if(A.k===B.k&&A.c!==B.c){
+   const tm=A.c==="term"?A:B,df=A.c==="def"?A:B;
+   sel.remove();b.remove();sel=null;done++;
+   $("#sd").insertAdjacentHTML("afterbegin",`<div><b>${esc(tm.t)}</b><br>${esc(df.t)}</div>`);
+   $("#mc").textContent=done;
+   if(done===src.length){clearInterval(MT);const f=fmt(Date.now()-t0);$("#ck").textContent=f;$("#st").textContent=`Finished in ${f} with ${tries} attempts.`}
+  }else{
+   [sel,b].forEach(x=>{x.classList.remove("sel");x.classList.add("no");setTimeout(()=>x.classList.remove("no"),400)});sel=null}
+ };
 }
 /* TYPED RESPONSE */
 function type(){
