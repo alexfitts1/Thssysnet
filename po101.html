@@ -319,31 +319,50 @@ function quiz(){
    $("#nq").hidden=false;$("#nq").focus();$("#nq").onclick=()=>{i++;draw()}};
  };draw();
 }
-/* PART B ESSAYS: full prompts */
+/* PART B ESSAYS: full prompts, saved for the session, self-graded, bookmarkable */
+let PBS={};try{PBS=JSON.parse(sessionStorage.getItem("po101pb")||"{}")}catch(e){}
+const pbSave=()=>{try{sessionStorage.setItem("po101pb",JSON.stringify(PBS))}catch(e){}};
+const pbGet=k=>PBS[k]||(PBS[k]={text:"",sub:false,grade:null,bm:false});
 function partb(){
  let ids=PB.map((_,k)=>k);
+ const all=()=>PB.map((_,k)=>k);
  function list(){
-  $("#app").innerHTML=`<div class="row" style="margin:0 0 12px"><span class="meta">${ids.length} prompts shown. On the exam you answer 4 of 6 in three sentences or less, 10 pts each.</span><button class="btn alt" id="dr">Draw 6 random</button><button class="btn alt" id="al">Show all 9</button></div>
-  ${ids.map(k=>`<div class="panel" style="margin-bottom:12px"><div class="tag">Question ${k+1}</div><div class="def">${esc(PB[k])}</div><div class="row"><button class="btn" data-i="${k}">Answer this</button></div></div>`).join("")}`;
-  $("#dr").onclick=()=>{ids=sh(PB.map((_,k)=>k)).slice(0,6).sort((a,b)=>a-b);list()};
-  $("#al").onclick=()=>{ids=PB.map((_,k)=>k);list()};
-  $("#app").onclick=e=>{const b=e.target.closest("[data-i]");if(b)ans(+b.dataset.i)};
+  const st=k=>{const p=PBS[k]||{};return (p.bm?"★ ":"")+(p.grade==="got"?"Got it":p.grade==="missed"?"Missed it":p.text?"Draft saved":"Not answered")};
+  const V=Object.values(PBS),g=V.filter(p=>p.grade==="got").length,m=V.filter(p=>p.grade==="missed").length;
+  $("#app").innerHTML=`<div class="row" style="margin:0 0 10px"><span class="meta">${ids.length} shown · Got it: ${g} · Missed: ${m} · Exam: answer 4 of 6 in three sentences or less, 10 pts each. Answers are saved while this tab is open.</span></div>
+  <div class="row" style="margin:0 0 12px"><button class="btn alt" id="dr">Draw 6 random</button><button class="btn alt" id="al">All 9</button><button class="btn alt" id="bm">★ Bookmarked</button><button class="btn alt" id="ms">Missed</button></div>
+  ${ids.length?ids.map(k=>`<div class="panel" style="margin-bottom:12px"><div class="tag">Question ${k+1} · ${st(k)}</div><div class="def">${esc(PB[k])}</div><div class="row"><button class="btn" data-i="${k}">${PBS[k]&&PBS[k].text?"Open my answer":"Answer this"}</button><button class="btn alt" data-b="${k}">${PBS[k]&&PBS[k].bm?"Remove bookmark":"★ Bookmark"}</button></div></div>`).join(""):`<div class="panel">Nothing here yet.</div>`}`;
+  $("#dr").onclick=()=>{ids=sh(all()).slice(0,6).sort((a,b)=>a-b);list()};
+  $("#al").onclick=()=>{ids=all();list()};
+  $("#bm").onclick=()=>{ids=all().filter(k=>PBS[k]&&PBS[k].bm);list()};
+  $("#ms").onclick=()=>{ids=all().filter(k=>PBS[k]&&PBS[k].grade==="missed");list()};
+  $("#app").onclick=e=>{const b=e.target.closest("[data-i]"),c=e.target.closest("[data-b]");if(b)ans(+b.dataset.i);if(c){const p=pbGet(+c.dataset.b);p.bm=!p.bm;pbSave();list()}};
  }
  function ans(k){
-  const ref=D.find(d=>d[0]==="B"&&d[1].startsWith("Q"+(k+1)+":"))[2];
+  const p=pbGet(k),ref=D.find(d=>d[0]==="B"&&d[1].startsWith("Q"+(k+1)+":"))[2];
   $("#app").onclick=null;
   $("#app").innerHTML=`<div class="panel"><div class="tag">Part B · Question ${k+1}</div><div class="def">${esc(PB[k])}</div>
   <textarea id="ans" placeholder="Answer in three sentences or less…"></textarea>
-  <div class="row"><span class="meta" id="sc">Sentences: 0 / 3</span><button class="btn" id="sb">Submit</button><button class="btn alt" id="bk">Back to questions</button></div><div id="out"></div></div>`;
-  $("#ans").oninput=()=>{const n=($("#ans").value.match(/[^.!?]+(?:[.!?]+|$)/g)||[]).filter(x=>x.trim()).length;$("#sc").textContent=`Sentences: ${n} / 3`;$("#sc").style.color=n>3?"var(--bad)":""};
+  <div class="row"><span class="meta" id="sc"></span><button class="btn" id="sb">Submit</button><button class="btn alt" id="bkm"></button><button class="btn alt" id="bk">Back to questions</button></div><div id="out"></div></div>`;
+  const ta=$("#ans");ta.value=p.text;
+  const cnt=()=>{const n=(ta.value.match(/[^.!?]+(?:[.!?]+|$)/g)||[]).filter(x=>x.trim()).length;$("#sc").textContent=`Sentences: ${n} / 3`;$("#sc").style.color=n>3?"var(--bad)":""};
+  const bmt=()=>{$("#bkm").textContent=p.bm?"★ Bookmarked":"☆ Bookmark"};
+  ta.oninput=()=>{p.text=ta.value;pbSave();cnt()};cnt();bmt();
+  $("#bkm").onclick=()=>{p.bm=!p.bm;pbSave();bmt()};
   $("#bk").onclick=list;
-  $("#sb").onclick=()=>{
-   const raw=$("#ans").value.trim(),a=raw||"(no answer)";$("#ans").disabled=true;$("#sb").hidden=true;
+  const submit=()=>{
+   const raw=ta.value.trim(),a=raw||"(no answer)";p.text=ta.value;p.sub=true;pbSave();ta.disabled=true;$("#sb").hidden=true;
    const dk=new Set(keyw(ref)),ak=new Set(keyw(raw)),hit=new Set([...dk].filter(w=>ak.has(w))),pct=dk.size?Math.round(100*hit.size/dk.size):0;
    $("#out").innerHTML=`<div class="cmp"><p class="big" style="margin:0">${pct}%</p><p class="meta" style="margin:0">${hit.size} of ${dk.size} key words from the study-guide summary appeared in your answer</p>
    <h4>Study-guide summary (words you matched highlighted)</h4><div class="real">${mark(ref,hit)}</div>
    <h4>What you said (matching words highlighted)</h4><div>${mark(a,hit)}</div></div>
-   <p class="meta">Questions that ask for your opinion (like Q1) also need your own reasoning, which the percentage cannot score.</p>`};
+   <div class="row"><span class="meta">Grade yourself:</span><button class="btn ok" id="y">Got it</button><button class="btn bad" id="n">Missed it</button><button class="btn alt" id="ed">Edit answer</button></div>
+   <p class="meta">Opinion parts (like Q1’s “do you agree?”) need your own judgment; the percentage cannot score them.</p>`;
+   $("#y").onclick=()=>{p.grade="got";pbSave();list()};$("#n").onclick=()=>{p.grade="missed";pbSave();list()};
+   $("#ed").onclick=()=>{p.sub=false;ta.disabled=false;$("#sb").hidden=false;$("#out").innerHTML=""};
+  };
+  $("#sb").onclick=submit;
+  if(p.sub&&p.text)submit();
  }
  list();
 }
@@ -352,12 +371,18 @@ function match(){
  const src=pool().filter(d=>d[2].length<150);
  if(src.length<2){$("#app").innerHTML=`<div class="panel">Pick a section with short definitions (Part B readings are too long for matching).</div>`;return}
  const T=[...sh(src.map(d=>({k:d[1],t:d[1],c:"term"}))),...sh(src.map(d=>({k:d[1],t:d[2],c:"def"})))];
- let sel=null,done=0,tries=0,t0=0;
+ let sel=null,done=0,tries=0,t0=0;const bad={};
  const fmt=ms=>{const s=ms/1000;return Math.floor(s/60)+":"+(s%60).toFixed(1).padStart(4,"0")};
  $("#app").innerHTML=`<div class="row" style="margin:0 0 4px"><div class="clock" id="ck">0:00.0</div><span class="meta" id="st">Click a term, then its definition. Stopwatch starts on your first click · ${src.length} pairs</span><button class="btn alt" id="ht" ${H?"":"disabled"}>Hint (${H} left)</button><button class="btn alt" id="ag">New round</button></div>
  <div class="mwrap"><div class="mg2" id="mg">${["term","def"].map(c=>`<div class="col"><h4>${c==="term"?"Terms":"Definitions"}</h4>${T.map((x,j)=>x.c===c?`<button class="m ${c}" data-j="${j}">${esc(x.t)}</button>`:"").join("")}</div>`).join("")}</div>
- <div class="side"><strong>Matched <span id="mc">0</span> / ${src.length}</strong><div id="sd"></div></div></div>`;
+ <div class="side"><strong>Matched <span id="mc">0</span> / ${src.length}</strong><div id="sd"></div><strong style="display:block;margin-top:12px;color:var(--bad)">Mixed up</strong><div id="bd" class="meta">Nothing yet</div></div></div><div id="res"></div>`;
  $("#ag").onclick=go;
+ const showBad=()=>{const e=Object.entries(bad).sort((a,b)=>b[1]-a[1]);$("#bd").innerHTML=e.length?e.map(([k,n])=>`${esc(k)} <b>×${n}</b>`).join("<br>"):"Nothing yet"};
+ const finish=f=>{
+  const acc=Math.round(100*src.length/tries),L=acc>=90?"A":acc>=80?"B":acc>=70?"C":acc>=60?"D":"F";
+  const miss=src.filter(d=>bad[d[1]]).sort((a,b)=>bad[b[1]]-bad[a[1]]);
+  $("#res").innerHTML=`<div class="panel" style="margin-top:16px"><div class="big">Grade: ${L} (${acc}%)</div><p class="meta">${src.length} pairs in ${tries} attempts · time ${f}. Grade = pairs ÷ attempts.</p>${miss.length?`<h4 style="margin:12px 0 4px;font:600 13px Arial,sans-serif;color:var(--blue)">Study these (${miss.length})</h4>`+miss.map(d=>`<p><b>${esc(d[1])}</b> <span class="meta">mixed up ×${bad[d[1]]}</span><br>${esc(d[2])}</p>`).join(""):"<p>No mistakes. Perfect round.</p>"}</div>`;
+  $("#res").scrollIntoView({behavior:"smooth"})};
  $("#ht").onclick=()=>{const ms=[...document.querySelectorAll(".m")];if(!ms.length||!useHint())return;const ks=[...new Set(ms.map(x=>T[x.dataset.j].k))];const k=sel?T[sel.dataset.j].k:ks[Math.floor(Math.random()*ks.length)];
   ms.forEach(x=>{if(T[x.dataset.j].k===k){x.classList.add("hint");setTimeout(()=>x.classList.remove("hint"),2500)}});$("#ht").textContent=`Hint (${H} left)`;if(!H)$("#ht").disabled=true};
  $("#mg").onclick=e=>{const b=e.target.closest(".m");if(!b)return;
@@ -370,9 +395,9 @@ function match(){
    sel.remove();b.remove();sel=null;done++;
    $("#sd").insertAdjacentHTML("afterbegin",`<div><b>${esc(tm.t)}</b><br>${esc(df.t)}</div>`);
    $("#mc").textContent=done;
-   if(done===src.length){clearInterval(MT);const f=fmt(Date.now()-t0);$("#ck").textContent=f;$("#st").textContent=`Finished in ${f} with ${tries} attempts.`}
+   if(done===src.length){clearInterval(MT);const f=fmt(Date.now()-t0);$("#ck").textContent=f;$("#st").textContent=`Finished in ${f} with ${tries} attempts.`;finish(f)}
   }else{
-   [sel,b].forEach(x=>{x.classList.remove("sel");x.classList.add("no");setTimeout(()=>x.classList.remove("no"),400)});sel=null}
+   [sel,b].forEach(x=>{x.classList.remove("sel");x.classList.add("no");const kk=T[x.dataset.j].k;bad[kk]=(bad[kk]||0)+1;showBad();setTimeout(()=>x.classList.remove("no"),400)});sel=null}
  };
 }
 /* TYPED RESPONSE (word-match highlighting + percent) */
@@ -380,9 +405,9 @@ function type(){
  const qs=sh(pool());let i=0,got=0,seen=0;
  const draw=()=>{
   if(i>=qs.length){$("#app").innerHTML=`<div class="panel"><div class="big">${got} / ${seen}</div><p>Marked correct. Round complete.</p><button class="btn" id="re">Go again</button></div>`;$("#re").onclick=type;return}
-  const q=qs[i];let hinted=false;
+  const q=qs[i],P=q[0]==="B"?PB[+q[1].slice(1,2)-1]:null;let hinted=false;
   $("#app").innerHTML=`<div class="meta">Term ${i+1} of ${qs.length} · Self-scored: ${got} / ${seen}</div>
-  <div class="panel"><div class="tag">Define this from memory</div><div class="term">${esc(q[1])}</div>
+  <div class="panel">${P?`<div class="tag">Part B question</div><div class="def">${esc(P)}</div>`:`<div class="tag">Define this from memory</div><div class="term">${esc(q[1])}</div>`}
   <textarea id="ans" placeholder="Type your definition…"></textarea>
   <div class="row"><button class="btn" id="sb">Submit</button><button class="btn alt" id="ht" ${H?"":"disabled"}>Hint (${H} left)</button></div>
   <div id="hx" class="meta" style="margin-top:8px"></div><div id="out"></div></div>`;
@@ -391,7 +416,7 @@ function type(){
    const raw=$("#ans").value.trim(),a=raw||"(no answer)";$("#ans").disabled=true;$("#sb").hidden=true;$("#ht").hidden=true;
    const dk=new Set(keyw(q[2])),ak=new Set(keyw(raw)),hit=new Set([...dk].filter(w=>ak.has(w))),pct=dk.size?Math.round(100*hit.size/dk.size):0;
    $("#out").innerHTML=`<div class="cmp"><p class="big" style="margin:0">${pct}%</p><p class="meta" style="margin:0">${hit.size} of ${dk.size} key words from the definition appeared in your answer</p>
-   <h4>Term</h4><div>${esc(q[1])}</div><h4>Real definition (words you matched highlighted)</h4><div class="real">${mark(q[2],hit)}</div>
+   <h4>${P?"Question":"Term"}</h4><div>${esc(P||q[1])}</div><h4>Real definition (words you matched highlighted)</h4><div class="real">${mark(q[2],hit)}</div>
    <h4>What you said (matching words highlighted)</h4><div>${mark(a,hit)}</div></div>
    <div class="row"><span class="meta">Did you get it?</span><button class="btn ok" id="y">Got it</button><button class="btn bad" id="n">Missed it</button></div>`;
    const nx=r=>{seen++;if(r)got++;i++;draw()};$("#y").onclick=()=>nx(1);$("#n").onclick=()=>nx(0)};
